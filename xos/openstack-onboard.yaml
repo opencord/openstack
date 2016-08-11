@@ -1,0 +1,16 @@
+tosca_definitions_version: tosca_simple_yaml_1_0
+
+description: Onboard the OpenStack service
+
+imports:
+   - custom_types/xos.yaml
+
+topology_template:
+  node_templates:
+    servicecontroller#openstack:
+      type: tosca.nodes.ServiceController
+      properties:
+          base_url: file:///opt/xos_services/openstack/xos/
+          synchronizer: synchronizer/manifest
+          synchronizer_run: xos-synchronizer.py
+
