@@ -12,8 +12,8 @@ from django.core import management
 from core.models import *
 from xos.config import Config
 try:
-    from openstack_xos.client import OpenStackClient
-    from openstack_xos.driver import OpenStackDriver
+    from synchronizers.openstack.client import OpenStackClient
+    from synchronizers.openstack.driver import OpenStackDriver
     has_openstack = True
 except:
     has_openstack = False

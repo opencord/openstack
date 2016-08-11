@@ -9,7 +9,6 @@ from core.models.site import Controller, SiteDeployment, SiteDeployment
 from core.models.user import User
 from core.models.controlleruser import ControllerUser
 from synchronizers.base.ansible import *
-from openstack_xos.driver import OpenStackDriver
 from xos.logger import observer_logger as logger
 import json
 
@@ -29,7 +28,7 @@ class SyncControllerUsers(OpenStackSyncStep):
 
         roles = ['user']
         if controller_user.user.is_admin:
-            driver = OpenStackDriver().admin_driver(controller=controller_user.controller)
+            driver = self.driver.admin_driver(controller=controller_user.controller)
             roles.append(driver.get_admin_role().name)
 
         # setup user home site roles at controller

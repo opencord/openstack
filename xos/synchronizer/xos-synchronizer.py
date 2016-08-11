@@ -21,7 +21,7 @@ except:
 config = Config()
 
 # set the driver.
-from openstack_xos.driver import OpenStackDriver
+from synchronizers.openstack.driver import OpenStackDriver
 set_driver(OpenStackDriver())
 
 # after http://www.erlenstar.demon.co.uk/unix/faq_2.html

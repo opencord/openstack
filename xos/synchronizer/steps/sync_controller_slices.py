@@ -8,7 +8,6 @@ from synchronizers.base.openstacksyncstep import OpenStackSyncStep
 from synchronizers.base.syncstep import *
 from core.models import *
 from synchronizers.base.ansible import *
-from openstack_xos.driver import OpenStackDriver
 from xos.logger import observer_logger as logger
 import json
 
@@ -31,7 +30,7 @@ class SyncControllerSlices(OpenStackSyncStep):
             raise Exception("slice createor %s has not accout at controller %s" % (controller_slice.slice.creator, controller_slice.controller.name))
         else:
             controller_user = controller_users[0]
-            driver = OpenStackDriver().admin_driver(controller=controller_slice.controller)
+            driver = self.driver.admin_driver(controller=controller_slice.controller)
             roles = [driver.get_admin_role().name]
 
         max_instances=int(controller_slice.slice.max_instances)
@@ -54,7 +53,7 @@ class SyncControllerSlices(OpenStackSyncStep):
         tenant_id = res[0]['id']
         if (not controller_slice.tenant_id):
             try:
-                driver = OpenStackDriver().admin_driver(controller=controller_slice.controller)
+                driver = self.driver.admin_driver(controller=controller_slice.controller)
                 driver.shell.nova.quotas.update(tenant_id=tenant_id, instances=int(controller_slice.slice.max_instances))
             except:
                 logger.log_exc('Could not update quota for %s'%controller_slice.slice.name)

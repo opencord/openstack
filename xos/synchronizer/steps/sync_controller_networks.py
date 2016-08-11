@@ -13,7 +13,6 @@ from core.models.slice import *
 from core.models.instance import Instance
 from xos.logger import observer_logger as logger
 from synchronizers.base.ansible import *
-from openstack_xos.driver import OpenStackDriver
 from xos.config import Config
 import json
 
@@ -148,16 +147,3 @@ class SyncControllerNetworks(OpenStackSyncStep):
 
         return network_fields
 
-	"""
-        driver = OpenStackDriver().client_driver(caller=controller_network.network.owner.creator,
-                                                 tenant=controller_network.network.owner.name,
-                                                 controller=controller_network.controller.name)
-        if (controller_network.router_id) and (controller_network.subnet_id):
-            driver.delete_router_interface(controller_network.router_id, controller_network.subnet_id)
-        if controller_network.subnet_id:
-            driver.delete_subnet(controller_network.subnet_id)
-        if controller_network.router_id:
-            driver.delete_router(controller_network.router_id)
-        if controller_network.net_id:
-            driver.delete_network(controller_network.net_id)
-	"""

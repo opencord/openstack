@@ -7,7 +7,6 @@ from synchronizers.base.openstacksyncstep import OpenStackSyncStep
 from synchronizers.base.syncstep import *
 from core.models import *
 from synchronizers.base.ansible import *
-from openstack_xos.driver import OpenStackDriver
 from xos.logger import observer_logger as logger
 import json
 
