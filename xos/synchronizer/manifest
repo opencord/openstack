@@ -1,4 +1,5 @@
 run.sh
+openstack_synchronizer_config
 templates/stop-container.sh.j2
 templates/container.service.j2
 templates/container.conf.j2
