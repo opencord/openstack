@@ -2,7 +2,7 @@ import os
 import base64
 from django.db.models import F, Q
 from xos.config import Config
-from synchronizers.base.openstacksyncstep import OpenStackSyncStep
+from synchronizers.openstack.openstacksyncstep import OpenStackSyncStep
 from core.models.image import Image
 from xos.logger import observer_logger as logger
 

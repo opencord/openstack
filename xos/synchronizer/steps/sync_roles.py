@@ -2,7 +2,7 @@ import os
 import base64
 from django.db.models import F, Q
 from xos.config import Config
-from synchronizers.base.openstacksyncstep import OpenStackSyncStep
+from synchronizers.openstack.openstacksyncstep import OpenStackSyncStep
 from core.models.role import Role
 from core.models.site import SiteRole, Controller, ControllerRole
 from core.models.slice import SliceRole
