@@ -16,11 +16,13 @@ name=openstack
 dependency_graph=/opt/xos/model-deps
 steps_dir=/opt/xos/synchronizers/openstack/steps
 sys_dir=/opt/xos/synchronizers/openstack/sys
+model_policies_dir=/opt/xos/synchronizers/openstack/model_policies
 logfile=/var/log/xos_backend.log
 save_ansible_output=True
 backoff_disabled=False
 pretend=False
 images_directory=/opt/xos/images
+
 
 [feefie]
 client_id='vicci_dev_central'
