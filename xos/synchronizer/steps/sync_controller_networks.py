@@ -48,6 +48,28 @@ class SyncControllerNetworks(OpenStackSyncStep):
         ip = ip & netmask | 1
         return socket.inet_ntoa(struct.pack("!L", ip))
 
+    def get_driver(self, controller_network):
+        # A bunch of stuff to compensate for OpenStackDriver.client_driver()
+        # not being in working condition.
+        from synchronizers.openstack.client import OpenStackClient
+        from synchronizers.openstack.driver import OpenStackDriver
+        caller = controller_network.network.owner.creator
+        auth = {'username': caller.email,
+                'password': caller.remote_password,
+                'tenant': controller_network.network.owner.name}
+        client = OpenStackClient(controller=controller_network.controller, **auth)
+        driver = OpenStackDriver(client=client)
+
+        return driver
+
+    def get_segmentation_id(self, controller_network):
+        driver = self.get_driver(controller_network)
+        neutron_network = driver.shell.neutron.list_networks(controller_network.network_id)["networks"][0]
+        if "provider:segmentation_id" in neutron_network:
+            return neutron_network["provider:segmentation_id"]
+        else:
+            return None
+
     def save_controller_network(self, controller_network):
         network_name = controller_network.network.name
         subnet_name = '%s-%d'%(network_name,controller_network.pk)
@@ -73,6 +95,8 @@ class SyncControllerNetworks(OpenStackSyncStep):
         self.cidr=cidr
         slice = controller_network.network.owner
 
+        controller_network.gateway = self.alloc_gateway(cidr)
+
         network_fields = {'endpoint':controller_network.controller.auth_url,
                     'endpoint_v3': controller_network.controller.auth_url_v3,
                     'admin_user':slice.creator.email,
@@ -83,7 +107,7 @@ class SyncControllerNetworks(OpenStackSyncStep):
                     'subnet_name':subnet_name,
                     'ansible_tag':'%s-%s@%s'%(network_name,slice.slicename,controller_network.controller.name),
                     'cidr':cidr,
-                    'gateway':self.alloc_gateway(cidr),
+                    'gateway': controller_network.gateway,
                     'start_ip':start_ip,
                     'end_ip':end_ip,
                     'use_vtn':getattr(Config(), "networking_use_vtn", False),
@@ -98,6 +122,8 @@ class SyncControllerNetworks(OpenStackSyncStep):
         controller_network.subnet = self.cidr
         controller_network.subnet_id = subnet_id
 	controller_network.backend_status = '1 - OK'
+        if not controller_network.segmentation_id:
+            controller_network.segmentation_id = self.get_segmentation_id(controller_network)
         controller_network.save()
 
 
