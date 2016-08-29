@@ -48,22 +48,8 @@ class SyncControllerNetworks(OpenStackSyncStep):
         ip = ip & netmask | 1
         return socket.inet_ntoa(struct.pack("!L", ip))
 
-    def get_driver(self, controller_network):
-        # A bunch of stuff to compensate for OpenStackDriver.client_driver()
-        # not being in working condition.
-        from synchronizers.openstack.client import OpenStackClient
-        from synchronizers.openstack.driver import OpenStackDriver
-        caller = controller_network.network.owner.creator
-        auth = {'username': caller.email,
-                'password': caller.remote_password,
-                'tenant': controller_network.network.owner.name}
-        client = OpenStackClient(controller=controller_network.controller, **auth)
-        driver = OpenStackDriver(client=client)
-
-        return driver
-
     def get_segmentation_id(self, controller_network):
-        driver = self.get_driver(controller_network)
+        driver = self.driver.admin_driver(controller = controller_network.controller)
         neutron_network = driver.shell.neutron.list_networks(controller_network.network_id)["networks"][0]
         if "provider:segmentation_id" in neutron_network:
             return neutron_network["provider:segmentation_id"]
