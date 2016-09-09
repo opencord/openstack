@@ -114,16 +114,10 @@ class SyncControllerNetworks(OpenStackSyncStep):
 
 
     def map_sync_inputs(self, controller_network):
-        # XXX This check should really be made from booleans, rather than using hardcoded network names
-        #if (controller_network.network.template.name not in ['Private', 'Private-Indirect', 'Private-Direct', 'management_template'):
-        #    logger.info("skipping network controller %s because it is not private" % controller_network)
-        #    # We only sync private networks
-        #    return SyncStep.SYNC_WITHOUT_RUNNING
-
-        # hopefully a better approach than above
+        # make sure to not sync a shared network
         if (controller_network.network.template.shared_network_name or controller_network.network.template.shared_network_id):
             return SyncStep.SYNC_WITHOUT_RUNNING
-        
+
         if not controller_network.controller.admin_user:
             logger.info("controller %r has no admin_user, skipping" % controller_network.controller)
             return
@@ -134,10 +128,10 @@ class SyncControllerNetworks(OpenStackSyncStep):
             raise Exception('Could not save network controller %s'%controller_network)
 
     def map_delete_inputs(self, controller_network):
-        # XXX This check should really be made from booleans, rather than using hardcoded network names
-	if (controller_network.network.template.name not in ['Private', 'Private-Indirect', 'Private-Direct']):
-            # We only sync private networks
+        # make sure to not delete a shared network
+        if (controller_network.network.template.shared_network_name or controller_network.network.template.shared_network_id):
             return
+
 	try:
         	slice = controller_network.network.owner # XXX: FIXME!!
         except:
