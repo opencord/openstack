@@ -211,7 +211,7 @@ class SyncInstances(OpenStackSyncStep):
         input = {'endpoint':controller.auth_url,
                      'admin_user': instance.creator.email,
                      'admin_password': instance.creator.remote_password,
-                     'admin_tenant': instance.slice.name,
+                     'project_name': instance.slice.name,
                      'tenant': instance.slice.name,
                      'tenant_description': instance.slice.description,
                      'name':instance_name,
