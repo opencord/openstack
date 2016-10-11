@@ -51,7 +51,7 @@ class SyncInstances(OpenStackSyncStep):
                     nics.remove(nic)
 
         # move the management network to the second spot
-        for net in nics[:]:
+        for nic in nics[:]:
             network=nic.get("network", None)
             if network:
                 tem = network.template
