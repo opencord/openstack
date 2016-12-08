@@ -104,6 +104,10 @@ class SyncInstances(OpenStackSyncStep):
         controller_networks = ControllerNetwork.objects.filter(network__in=networks,
                                                                 controller=instance.node.site_deployment.controller)
 
+        for network in networks:
+           if not ControllerNetwork.objects.filter(network=network, controller=instance.node.site_deployment.controller).exists():
+              raise DeferredException("Instance %s Private Network %s lacks ControllerNetwork object" % (instance, network.name))
+
         #controller_networks = self.sort_controller_networks(controller_networks)
         for controller_network in controller_networks:
             # Lenient exception - causes slow backoff
