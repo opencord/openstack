@@ -142,7 +142,7 @@ class SyncControllerNetworks(OpenStackSyncStep):
 	cidr = controller_network.subnet
 	network_fields = {'endpoint':controller_network.controller.auth_url,
                     'admin_user':slice.creator.email, # XXX: FIXME
-                    'tenant_name':slice.name, # XXX: FIXME
+                    'admin_project':slice.name, # XXX: FIXME
                     'admin_password':slice.creator.remote_password,
                     'name':network_name,
                     'subnet_name':subnet_name,
