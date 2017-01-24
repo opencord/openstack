@@ -12,7 +12,7 @@ from core.models.network import *
 from core.models.slice import *
 from core.models.instance import Instance
 from xos.logger import observer_logger as logger
-from synchronizers.base.ansible import *
+from synchronizers.base.ansible_helper import *
 from xos.config import Config
 import json
 

@@ -8,7 +8,7 @@ from synchronizers.base.syncstep import *
 from core.models.slice import Controller, SlicePrivilege 
 from core.models.user import User
 from core.models.controlleruser import ControllerUser, ControllerSlicePrivilege
-from synchronizers.base.ansible import *
+from synchronizers.base.ansible_helper import *
 from xos.logger import observer_logger as logger
 import json
 

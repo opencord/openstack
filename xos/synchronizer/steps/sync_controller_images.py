@@ -8,7 +8,7 @@ from synchronizers.base.syncstep import *
 from core.models import Controller
 from core.models import Image, ControllerImages
 from xos.logger import observer_logger as logger 
-from synchronizers.base.ansible import *
+from synchronizers.base.ansible_helper import *
 import json
 
 class SyncControllerImages(OpenStackSyncStep):

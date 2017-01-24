@@ -7,7 +7,7 @@ from xos.config import Config
 from synchronizers.openstack.openstacksyncstep import OpenStackSyncStep
 from synchronizers.base.syncstep import *
 from core.models import *
-from synchronizers.base.ansible import *
+from synchronizers.base.ansible_helper import *
 from xos.logger import observer_logger as logger
 import json
 

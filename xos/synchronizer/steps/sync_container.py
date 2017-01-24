@@ -8,7 +8,7 @@ from django.db.models import F, Q
 from xos.config import Config
 from synchronizers.base.SyncInstanceUsingAnsible import SyncInstanceUsingAnsible
 from synchronizers.base.syncstep import SyncStep, DeferredException
-from synchronizers.base.ansible import run_template_ssh
+from synchronizers.base.ansible_helper import run_template_ssh
 from core.models import Service, Slice, Instance
 from xos.logger import Logger, logging
 

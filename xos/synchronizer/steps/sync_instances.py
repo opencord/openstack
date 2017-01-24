@@ -8,7 +8,7 @@ from synchronizers.openstack.openstacksyncstep import OpenStackSyncStep
 from core.models.instance import Instance
 from core.models.slice import Slice, SlicePrivilege, ControllerSlice
 from core.models.network import Network, NetworkSlice, ControllerNetwork
-from synchronizers.base.ansible import *
+from synchronizers.base.ansible_helper import *
 from synchronizers.base.syncstep import *
 from xos.logger import observer_logger as logger
 

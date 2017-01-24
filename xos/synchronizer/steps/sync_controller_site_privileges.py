@@ -9,7 +9,7 @@ from core.models.site import Controller, SitePrivilege
 from core.models.user import User
 from core.models.controlleruser import ControllerUser, ControllerSitePrivilege
 from xos.logger import observer_logger as logger
-from synchronizers.base.ansible import *
+from synchronizers.base.ansible_helper import *
 import json
 
 class SyncControllerSitePrivileges(OpenStackSyncStep):
