@@ -68,6 +68,16 @@ class SyncInstances(OpenStackSyncStep):
         return result
 
     def map_sync_inputs(self, instance):
+
+        # sanity check - make sure model_policy for slice has run
+        if ((not instance.slice.policed) or (instance.slice.policed < instance.slice.updated)):
+            raise DeferredException("Instance %s waiting on Slice %s to execute model policies" % (instance, slice.name))
+
+        # sanity check - make sure model_policy for all slice networks have run
+        for network in instance.slice.ownedNetworks.all():
+            if ((not network.policed) or (network.policed < network.updated)):
+                raise DeferredException("Instance %s waiting on Network %s to execute model policies" % (instance, network.name))
+
         inputs = {}
 	metadata_update = {}
         if (instance.numberCores):
