@@ -34,21 +34,39 @@ class SyncInstances(OpenStackSyncStep):
             userdata += '  - %s\n' % key
         return userdata
 
-    def sort_nics(self, nics):
-        result = []
+    def get_nic_for_first_slot(self, nics):
+        # Try to find a NIC with "public" visibility
+        for nic in nics[:]:
+            network=nic.get("network", None)
+            if network:
+                tem = network.template
+                if (tem.visibility == "public"):
+                    return nic
 
-        # Enforce VTN's network order requirement. The access network must be
-        # inserted into the first slot. The management network must be inserted
-        # into the second slot.
-
-        # move the private and/or access network to the first spot
+        # Otherwise try to find a private network
         for nic in nics[:]:
             network=nic.get("network", None)
             if network:
                 tem = network.template
                 if (tem.visibility == "private") and (tem.translation=="none") and ("management" not in tem.name):
-                    result.append(nic)
-                    nics.remove(nic)
+                   return nic
+
+        raise Exception("Could not find a NIC for first slot")
+
+    def sort_nics(self, nics):
+        result = []
+
+        # Enforce VTN's network order requirement for vSG.  The access network must be
+        # inserted into the first slot. The management network must be inserted
+        # into the second slot.
+        #
+        # Some VMs may connect to multiple networks that advertise gateways.  In this case, the
+        # default gateway is enforced on eth0.  So give priority to "public" networks when 
+        # choosing a network for the first slot.
+
+        nic = self.get_nic_for_first_slot(nics)
+        result.append(nic)
+        nics.remove(nic)
 
         # move the management network to the second spot
         for nic in nics[:]:
@@ -121,8 +139,7 @@ class SyncInstances(OpenStackSyncStep):
         #controller_networks = self.sort_controller_networks(controller_networks)
         for controller_network in controller_networks:
             # Lenient exception - causes slow backoff
-            if controller_network.network.template.visibility == 'private' and \
-               controller_network.network.template.translation == 'none':
+            if controller_network.network.template.translation == 'none':
                    if not controller_network.net_id:
                         raise DeferredException("Instance %s Private Network %s has no id; Try again later" % (instance, controller_network.network.name))
                    nics.append({"kind": "net", "value": controller_network.net_id, "network": controller_network.network})
