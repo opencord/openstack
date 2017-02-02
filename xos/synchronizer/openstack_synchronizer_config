@@ -2,7 +2,7 @@
 name=xos
 user=postgres
 password=password
-host=localhost
+host=xos_db
 port=5432
 
 [api]
@@ -19,11 +19,13 @@ sys_dir=/opt/xos/synchronizers/openstack/sys
 model_policies_dir=/opt/xos/synchronizers/openstack/model_policies
 logfile=/var/log/xos_backend.log
 save_ansible_output=True
-backoff_disabled=False
+backoff_disabled=True
 pretend=False
 images_directory=/opt/xos/images
-
 
 [feefie]
 client_id='vicci_dev_central'
 user_id='pl'
+
+[networking]
+use_vtn=True
