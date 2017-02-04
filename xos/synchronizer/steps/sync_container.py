@@ -156,7 +156,7 @@ class SyncContainer(SyncInstanceUsingAnsible):
         if not template_name:
             template_name = self.template_name
         tStart = time.time()
-        run_template_ssh(template_name, fields, path="container")
+        run_template_ssh(template_name, fields, path="container", object=o)
         logger.info("playbook execution time %d" % int(time.time()-tStart),extra=o.tologdict())
 
 
