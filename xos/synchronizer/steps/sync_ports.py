@@ -195,8 +195,11 @@ class SyncPorts(OpenStackSyncStep):
 
                     args = {"network_id": cn.net_id}
                     neutron_port_name = port.get_parameters().get("neutron_port_name", None)
+                    neutron_port_ip = port.get_parameters().get("neutron_port_ip", None)
                     if neutron_port_name:
                         args["name"] = neutron_port_name
+                    if neutron_port_ip:
+                        args["fixed_ips"] = [{"ip_address": neutron_port_ip, "subnet_id": cn.subnet_id}]
 
                     neutron_port = driver.shell.neutron.create_port({"port": args})["port"]
                     port.port_id = neutron_port["id"]
