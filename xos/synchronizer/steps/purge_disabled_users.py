@@ -1,11 +1,10 @@
 import os
 import base64
 import datetime
-from django.db.models import F, Q
 from xos.config import Config
 from synchronizers.openstack.openstacksyncstep import OpenStackSyncStep
-from core.models.user import User
 from xos.logger import observer_logger as logger
+from synchronizers.new_base.modelaccessor import *
 
 #class SyncRoles(OpenStackSyncStep):
 #    provides=[User]

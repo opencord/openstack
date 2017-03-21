@@ -1,7 +1,6 @@
-def handle(image):
-    from core.models import Controller, ControllerImages, Image
-    from collections import defaultdict
+from synchronizers.new_base.modelaccessor import *
 
+def handle(image):
     if (image.kind == "container"):
         # container images do not get instantiated
         return

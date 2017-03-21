@@ -1,16 +1,13 @@
 import os
 import base64
 import socket
-from django.db.models import F, Q
 from xos.config import Config
 from xos.settings import RESTAPI_HOSTNAME, RESTAPI_PORT
 from synchronizers.openstack.openstacksyncstep import OpenStackSyncStep
-from core.models.instance import Instance
-from core.models.slice import Slice, SlicePrivilege, ControllerSlice
-from core.models.network import Network, NetworkSlice, ControllerNetwork
-from synchronizers.base.ansible_helper import *
-from synchronizers.base.syncstep import *
+from synchronizers.new_base.ansible_helper import *
+from synchronizers.new_base.syncstep import *
 from xos.logger import observer_logger as logger
+from synchronizers.new_base.modelaccessor import *
 
 def escape(s):
     s = s.replace('\n',r'\n').replace('"',r'\"')
@@ -105,7 +102,7 @@ class SyncInstances(OpenStackSyncStep):
             if tag.name.startswith("sysctl-"):
                 metadata_update[tag.name] = tag.value
 
-	slice_memberships = SlicePrivilege.objects.filter(slice=instance.slice)
+	slice_memberships = SlicePrivilege.objects.filter(slice_id=instance.slice.id)
         pubkeys = set([sm.user.public_key for sm in slice_memberships if sm.user.public_key])
         if instance.creator.public_key:
             pubkeys.add(instance.creator.public_key)
@@ -120,23 +117,25 @@ class SyncInstances(OpenStackSyncStep):
 
         # handle ports the were created by the user
         port_ids=[]
-        for port in Port.objects.filter(instance=instance):
+        for port in Port.objects.filter(instance_id=instance.id):
             if not port.port_id:
                 raise DeferredException("Instance %s waiting on port %s" % (instance, port))
             nics.append({"kind": "port", "value": port.port_id, "network": port.network})
 
         # we want to exclude from 'nics' any network that already has a Port
-        existing_port_networks = [port.network for port in Port.objects.filter(instance=instance)]
+        existing_port_networks = [port.network for port in Port.objects.filter(instance_id=instance.id)]
+        existing_port_network_ids = [x.id for x in existing_port_networks]
 
-        networks = [ns.network for ns in NetworkSlice.objects.filter(slice=instance.slice) if ns.network not in existing_port_networks]
-        controller_networks = ControllerNetwork.objects.filter(network__in=networks,
-                                                                controller=instance.node.site_deployment.controller)
+        networks = [ns.network for ns in NetworkSlice.objects.filter(slice_id=instance.slice.id) if ns.network.id not in existing_port_network_ids]
+        networks_ids = [x.id for x in networks]
+        controller_networks = ControllerNetwork.objects.filter(controller_id=instance.node.site_deployment.controller.id)
+        controller_networks = [x for x in controller_networks if x.id in networks_ids]
+
 
         for network in networks:
-           if not ControllerNetwork.objects.filter(network=network, controller=instance.node.site_deployment.controller).exists():
+           if not ControllerNetwork.objects.filter(network_id=network.id, controller_id=instance.node.site_deployment.controller.id).exists():
               raise DeferredException("Instance %s Private Network %s lacks ControllerNetwork object" % (instance, network.name))
 
-        #controller_networks = self.sort_controller_networks(controller_networks)
         for controller_network in controller_networks:
             # Lenient exception - causes slow backoff
             if controller_network.network.template.translation == 'none':
@@ -148,7 +147,6 @@ class SyncInstances(OpenStackSyncStep):
         network_templates = [network.template.shared_network_name for network in networks \
                              if network.template.shared_network_name]
 
-        #driver = self.driver.client_driver(caller=instance.creator, tenant=instance.slice.name, controller=instance.controllerNetwork)
         driver = self.driver.admin_driver(tenant='admin', controller=instance.node.site_deployment.controller)
         nets = driver.shell.neutron.list_networks()['networks']
         for net in nets:
@@ -163,7 +161,8 @@ class SyncInstances(OpenStackSyncStep):
         nics = self.sort_nics(nics)
 
         image_name = None
-        controller_images = instance.image.controllerimages.filter(controller=instance.node.site_deployment.controller)
+        controller_images = instance.image.controllerimages.all()
+        controller_images = [x for x in controller_images if x.controller_id==instance.node.site_deployment.controller.id]
         if controller_images:
             image_name = controller_images[0].image.name
             logger.info("using image from ControllerImage object: " + str(image_name))

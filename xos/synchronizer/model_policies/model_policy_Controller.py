@@ -1,8 +1,7 @@
+from collections import defaultdict
+from synchronizers.new_base.modelaccessor import *
 
 def handle(controller):
-    from core.models import Controller, Site, ControllerSite, Slice, ControllerSlice, User, ControllerUser, ControllerImages, ControllerNetwork, Image, Network
-    from collections import defaultdict
-
     # relations for all sites
     ctrls_by_site = defaultdict(list)
     ctrl_sites = ControllerSite.objects.all()

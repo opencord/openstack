@@ -1,6 +1,6 @@
-def handle_container_on_metal(instance):
-        from core.models import Instance, Flavor, Port, Image
+from synchronizers.new_base.modelaccessor import *
 
+def handle_container_on_metal(instance):
         print "MODEL POLICY: instance", instance, "handle container_on_metal"
 
         if instance.deleted:
@@ -10,7 +10,7 @@ def handle_container_on_metal(instance):
             # Our current docker-on-metal network strategy requires that there be some
             # VM on the server that connects to the networks, so that
             # the containers can piggyback off of that configuration.
-            if not Instance.objects.filter(slice=instance.slice, node=instance.node, isolation="vm").exists():
+            if not Instance.objects.filter(slice_id=instance.slice.id, node_id=instance.node.id, isolation="vm").exists():
                 flavors = Flavor.objects.filter(name="m1.small")
                 if not flavors:
                     raise XOSConfigurationError("No m1.small flavor")
@@ -35,17 +35,18 @@ def handle_container_on_metal(instance):
             if (network.name.endswith("-nat")):
                 continue
 
-            if not Port.objects.filter(network=network, instance=instance).exists():
+            if not Port.objects.filter(network_id=network.id, instance_id=instance.id).exists():
                 port = Port(network = network, instance=instance)
                 port.save()
                 print "MODEL POLICY: instance", instance, "created port", port
 
 def handle(instance):
-    from core.models import Controller, ControllerSlice, ControllerNetwork, NetworkSlice
-
     networks = [ns.network for ns in NetworkSlice.objects.filter(slice=instance.slice)]
-    controller_networks = ControllerNetwork.objects.filter(network__in=networks,
-                                                                controller=instance.node.site_deployment.controller)
+    controller_networks = ControllerNetwork.objects.filter(controller=instance.node.site_deployment.controller)
+
+    # a little clumsy because the API ORM doesn't support __in queries
+    network_ids = [x.id for x in networks]
+    controller_networks = [x for x in controller_networks if x.network.id in network_ids]
 
     for cn in controller_networks:
         if (cn.lazy_blocked):

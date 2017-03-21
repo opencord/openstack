@@ -1,15 +1,11 @@
 import os
 import base64
-from collections import defaultdict
-from netaddr import IPAddress, IPNetwork
-from django.db.models import F, Q
 from xos.config import Config
 from synchronizers.openstack.openstacksyncstep import OpenStackSyncStep
-from synchronizers.base.syncstep import *
-from core.models import *
-from synchronizers.base.ansible_helper import *
+from synchronizers.new_base.syncstep import *
+from synchronizers.new_base.ansible_helper import *
 from xos.logger import observer_logger as logger
-import json
+from synchronizers.new_base.modelaccessor import *
 
 class SyncControllerSlices(OpenStackSyncStep):
     provides=[Slice]
@@ -24,8 +20,8 @@ class SyncControllerSlices(OpenStackSyncStep):
             logger.info("controller %r has no admin_user, skipping" % controller_slice.controller)
             return
 
-        controller_users = ControllerUser.objects.filter(user=controller_slice.slice.creator,
-                                                             controller=controller_slice.controller)
+        controller_users = ControllerUser.objects.filter(user_id=controller_slice.slice.creator.id,
+                                                             controller_id=controller_slice.controller.id)
         if not controller_users:
             raise Exception("slice createor %s has not accout at controller %s" % (controller_slice.slice.creator, controller_slice.controller.name))
         else:
@@ -65,8 +61,8 @@ class SyncControllerSlices(OpenStackSyncStep):
 
 
     def map_delete_inputs(self, controller_slice):
-        controller_users = ControllerUser.objects.filter(user=controller_slice.slice.creator,
-                                                              controller=controller_slice.controller)
+        controller_users = ControllerUser.objects.filter(user_id=controller_slice.slice.creator.id,
+                                                              controller_id=controller_slice.controller.id)
         if not controller_users:
             raise Exception("slice createor %s has not accout at controller %s" % (controller_slice.slice.creator, controller_slice.controller.name))
         else:

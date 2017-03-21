@@ -2,21 +2,14 @@ import os
 import base64
 import struct
 import socket
-from collections import defaultdict
 from netaddr import IPAddress, IPNetwork
-from django.db.models import F, Q
 from xos.config import Config
 from synchronizers.openstack.openstacksyncstep import OpenStackSyncStep
-from synchronizers.base.syncstep import *
-from core.models.network import *
-from core.models.slice import *
-from core.models.instance import Instance
+from synchronizers.new_base.syncstep import *
 from xos.logger import observer_logger as logger
-from synchronizers.base.ansible_helper import *
+from synchronizers.new_base.ansible_helper import *
 from xos.config import Config
-import json
-
-import pdb
+from synchronizers.new_base.modelaccessor import *
 
 class SyncControllerNetworks(OpenStackSyncStep):
     requested_interval = 0

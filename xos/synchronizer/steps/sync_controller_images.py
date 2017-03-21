@@ -1,15 +1,11 @@
 import os
 import base64
-from collections import defaultdict
-from django.db.models import F, Q
 from xos.config import Config
 from synchronizers.openstack.openstacksyncstep import OpenStackSyncStep
-from synchronizers.base.syncstep import *
-from core.models import Controller
-from core.models import Image, ControllerImages
-from xos.logger import observer_logger as logger 
-from synchronizers.base.ansible_helper import *
-import json
+from synchronizers.new_base.syncstep import *
+from xos.logger import observer_logger as logger
+from synchronizers.new_base.ansible_helper import *
+from synchronizers.new_base.modelaccessor import *
 
 class SyncControllerImages(OpenStackSyncStep):
     provides=[ControllerImages]
@@ -21,8 +17,7 @@ class SyncControllerImages(OpenStackSyncStep):
         if (deleted):
             return []
 
-        # now we return all images that need to be enacted
-        return ControllerImages.objects.filter(Q(enacted__lt=F('updated')) | Q(enacted=None))
+        return super(SyncControllerImages, self).fetch_pending(deleted)
 
     def map_sync_inputs(self, controller_image):
         image_fields = {'endpoint':controller_image.controller.auth_url,

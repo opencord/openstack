@@ -1,16 +1,12 @@
 import os
 import base64
-from collections import defaultdict
-from django.db.models import F, Q
+import json
 from xos.config import Config
 from synchronizers.openstack.openstacksyncstep import OpenStackSyncStep
-from synchronizers.base.syncstep import *
-from core.models.slice import Controller, SlicePrivilege 
-from core.models.user import User
-from core.models.controlleruser import ControllerUser, ControllerSlicePrivilege
-from synchronizers.base.ansible_helper import *
+from synchronizers.new_base.syncstep import *
+from synchronizers.new_base.ansible_helper import *
 from xos.logger import observer_logger as logger
-import json
+from synchronizers.new_base.modelaccessor import *
 
 class SyncControllerSlicePrivileges(OpenStackSyncStep):
     provides=[SlicePrivilege]
@@ -29,15 +25,6 @@ class SyncControllerSlicePrivileges(OpenStackSyncStep):
         if not controller_slice_privilege.slice_privilege.user.site:
             raise Exception('Sliceless user %s'%controller_slice_privilege.slice_privilege.user.email)
         else:
-            # look up tenant id for the user's slice at the controller
-            #ctrl_slice_deployments = SliceDeployment.objects.filter(
-            #  slice_deployment__slice=controller_slice_privilege.user.slice,
-            #  controller=controller_slice_privilege.controller)
-
-            #if ctrl_slice_deployments:
-            #    # need the correct tenant id for slice at the controller
-            #    tenant_id = ctrl_slice_deployments[0].tenant_id  
-            #    tenant_name = ctrl_slice_deployments[0].slice_deployment.slice.login_base
             user_fields = {
                'endpoint':controller_slice_privilege.controller.auth_url,
                'endpoint_v3': controller_slice_privilege.controller.auth_url_v3,
@@ -64,14 +51,16 @@ class SyncControllerSlicePrivileges(OpenStackSyncStep):
 
         if controller_slice_privilege.role_id:
             driver = self.driver.admin_driver(controller=controller_slice_privilege.controller)
-            user = ControllerUser.objects.get(
-                controller=controller_slice_privilege.controller, 
-                user=controller_slice_privilege.slice_privilege.user
+            user = ControllerUser.objects.filter(
+                controller_id=controller_slice_privilege.controller.id,
+                user_id=controller_slice_privilege.slice_privilege.user.id
             )
-            slice = ControllerSlice.objects.get(
-                controller=controller_slice_privilege.controller, 
-                user=controller_slice_privilege.slice_privilege.user
+            user = user[0]
+            slice = ControllerSlice.objects.filter(
+                controller_id=controller_slice_privilege.controller.id,
+                user_id=controller_slice_privilege.slice_privilege.user.id
             )
+            slice = slice[0]
             driver.delete_user_role(
                 user.kuser_id, 
                 slice.tenant_id, 

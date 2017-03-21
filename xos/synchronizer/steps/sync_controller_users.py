@@ -1,16 +1,11 @@
 import os
 import base64
-from collections import defaultdict
-from django.db.models import F, Q
 from xos.config import Config
 from synchronizers.openstack.openstacksyncstep import OpenStackSyncStep
-from synchronizers.base.syncstep import *
-from core.models.site import Controller, SiteDeployment, SiteDeployment
-from core.models.user import User
-from core.models.controlleruser import ControllerUser
-from synchronizers.base.ansible_helper import *
+from synchronizers.new_base.syncstep import *
+from synchronizers.new_base.ansible_helper import *
 from xos.logger import observer_logger as logger
-import json
+from synchronizers.new_base.modelaccessor import *
 
 class SyncControllerUsers(OpenStackSyncStep):
     provides=[User]
@@ -35,15 +30,6 @@ class SyncControllerUsers(OpenStackSyncStep):
         if not controller_user.user.site:
             raise Exception('Siteless user %s'%controller_user.user.email)
         else:
-            # look up tenant id for the user's site at the controller
-            #ctrl_site_deployments = SiteDeployment.objects.filter(
-            #  site_deployment__site=controller_user.user.site,
-            #  controller=controller_user.controller)
-
-            #if ctrl_site_deployments:
-            #    # need the correct tenant id for site at the controller
-            #    tenant_id = ctrl_site_deployments[0].tenant_id
-            #    tenant_name = ctrl_site_deployments[0].site_deployment.site.login_base
             user_fields = {
                 'endpoint':controller_user.controller.auth_url,
                 'endpoint_v3': controller_user.controller.auth_url_v3,

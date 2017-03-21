@@ -1,6 +1,6 @@
+from synchronizers.new_base.modelaccessor import *
+
 def handle(controller_slice):
-    from core.models import ControllerSlice, Slice
-   
     try:
         my_status_code = int(controller_slice.backend_status[0])
         try:

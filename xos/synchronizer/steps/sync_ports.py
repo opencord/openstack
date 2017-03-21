@@ -1,11 +1,9 @@
 import os
 import base64
-from django.db.models import F, Q
 from xos.config import Config
 from synchronizers.openstack.openstacksyncstep import OpenStackSyncStep
-from core.models import Controller
-from core.models.network import *
 from xos.logger import observer_logger as logger
+from synchronizers.new_base.modelaccessor import *
 
 class SyncPorts(OpenStackSyncStep):
     requested_interval = 0 # 3600
@@ -170,14 +168,17 @@ class SyncPorts(OpenStackSyncStep):
                 continue
 
         # For ports that were created by the user, find that ones
-        # that don't have neutron ports, and create them.
-        for port in Port.objects.filter(Q(port_id__isnull=True), Q(instance__isnull=False) ):
+        # that don't have neutron ports, and create them. These are ports
+        # with a null port_id and a non-null instance_id.
+        ports = Port.objects.all()
+        ports = [x for x in ports if ((not x.port_id) and (x.instance_id))]
+        for port in ports:
             logger.info("XXX working on port %s" % port)
             controller = port.instance.node.site_deployment.controller
             slice = port.instance.slice
 
             if controller:
-                cn=port.network.controllernetworks.filter(controller=controller)
+                cn=[x for x in port.network.controllernetworks.all() if x.controller_id==controller.id]
                 if not cn:
                     logger.log_exc("no controllernetwork for %s" % port)
                     continue

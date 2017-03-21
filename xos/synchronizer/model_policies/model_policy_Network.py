@@ -1,9 +1,7 @@
-from core.models import *
+from synchronizers.new_base.modelaccessor import *
+from collections import defaultdict
 
 def handle(network):
-	from core.models import ControllerSlice,ControllerNetwork, Network
-	from collections import defaultdict
-
         print "MODEL POLICY: network", network
 
         # network = Network.get(network_id)
@@ -27,7 +25,11 @@ def handle(network):
 
                         # check and see if some instance already exists
                         for networkslice in network.networkslices.all():
-                            if networkslice.slice.instances.filter(node__site_deployment__controller=expected_controller).exists():
+                            found = False
+                            for instance in networkslice.slice.instances.all():
+                               if instance.node.site_deployment.controller.id == expected_controller.id:
+                                   found = True
+                            if found:
                                print "MODEL_POLICY: network, setting lazy_blocked to false because instance on controller already exists"
                                lazy_blocked=False
 

@@ -1,7 +1,6 @@
-def handle(user):
-    from core.models import Controller, ControllerSite, ControllerUser, User
-    from collections import defaultdict
+from synchronizers.new_base.modelaccessor import *
 
+def handle(user):
     # user = User.get(user_id)
     
     controller_users = ControllerUser.objects.filter(user=user)

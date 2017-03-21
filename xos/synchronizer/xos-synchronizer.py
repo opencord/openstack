@@ -6,21 +6,20 @@ import sys
 sys.path.append('/opt/xos')
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "xos.settings")
-from synchronizers.base.backend import Backend
-from synchronizers.base.event_loop import set_driver
 from xos.config import Config, DEFAULT_CONFIG_FN
-from core.models import Instance,NetworkTemplate
 from xos.logger import Logger, logging, logger
-from django.db import ProgrammingError
 import time
 
-try:
-    from django import setup as django_setup # django 1.7
-except:
-    django_setup = False
+from synchronizers.new_base.modelaccessor import *
+from synchronizers.new_base.backend import Backend
+from synchronizers.new_base.event_loop import set_driver
 
 config = Config()
 
+logger = Logger(level=logging.INFO)
+
+# TODO: These two lines are the only difference between this file and
+#       new_base/xos-synchronizer.py. Reconcile these.
 # set the driver.
 from synchronizers.openstack.driver import OpenStackDriver
 set_driver(OpenStackDriver())
@@ -63,9 +62,6 @@ def main():
     args = parser.parse_args()
 
     if args.daemon: daemon()
-
-    if django_setup: # 1.7
-        django_setup()
 
     models_active = False
     wait = False

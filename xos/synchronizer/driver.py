@@ -1,7 +1,7 @@
 import commands
 import hashlib
 from xos.config import Config
-from core.models import Controller
+from synchronizers.new_base.modelaccessor import *
 
 try:
     from synchronizers.openstack.client import OpenStackClient

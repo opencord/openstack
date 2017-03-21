@@ -1,10 +1,10 @@
+from synchronizers.new_base.modelaccessor import *
 
 def handle(instance):
-    from core.models import Controller, ControllerSlice, ControllerNetwork, NetworkSlice
-
-    networks = [ns.network for ns in NetworkSlice.objects.filter(slice=instance.slice)]
-    controller_networks = ControllerNetwork.objects.filter(network__in=networks,
-                                                                controller=instance.node.site_deployment.controller)
+    networks = [ns.network for ns in NetworkSlice.objects.filter(slice_id=instance.slice.id)]
+    network_ids = [x.id for x in networks]
+    controller_networks = ControllerNetwork.objects.filter(controller_id=instance.node.site_deployment.controller.id)
+    controller_networks = [x for x in controller_networks if x.network_id in network_ids]
 
     for cn in controller_networks:
         if (cn.lazy_blocked):	

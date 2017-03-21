@@ -1,22 +1,17 @@
 from xos.config import Config
+from synchronizers.new_base.modelaccessor import *
 
 def handle_delete(slice):
-    from core.models import Controller, ControllerSlice, SiteDeployment, Network, NetworkSlice,NetworkTemplate, Slice
-    from collections import defaultdict
-
     public_nets = []
     private_net = None
-    networks = Network.objects.filter(owner=slice)
+    networks = Network.objects.filter(owner_id=slice.id)
 
     for n in networks:
-        n.delete()	
-    
+        n.delete()
+
     # Note that sliceprivileges and slicecontrollers are autodeleted, through the dependency graph
 
 def handle(slice):
-    from core.models import Controller, ControllerSlice, SiteDeployment, Network, NetworkSlice,NetworkTemplate, Slice
-    from collections import defaultdict
-
     # only create nat_net if not using VTN
     support_nat_net = not getattr(Config(), "networking_use_vtn", False)
 
@@ -24,7 +19,7 @@ def handle(slice):
 
     # slice = Slice.get(slice_id)
 
-    controller_slices = ControllerSlice.objects.filter(slice=slice)
+    controller_slices = ControllerSlice.objects.filter(slice_id=slice.id)
     existing_controllers = [cs.controller for cs in controller_slices] 
         
     print "MODEL POLICY: slice existing_controllers=", existing_controllers
@@ -47,7 +42,7 @@ def handle(slice):
         # make sure slice has at least 1 public and 1 private networkd
         public_nets = []
         private_nets = []
-        networks = Network.objects.filter(owner=slice)
+        networks = Network.objects.filter(owner_id=slice.id)
         for network in networks:
             if not network.autoconnect:
                 continue
@@ -82,7 +77,12 @@ def handle(slice):
         # create slice networks
         public_net_slice = None
         private_net_slice = None
-        net_slices = NetworkSlice.objects.filter(slice=slice, network__in=private_nets+public_nets)
+
+        public_net_ids = [x.id for x in public_nets]
+        private_net_ids = [x.id for x in private_nets]
+        net_slices = NetworkSlice.objects.filter(slice_id=slice.id)
+        net_slices = [x for x in net_slices if x.network_id in public_net_ids+private_net_ids]
+
         for net_slice in net_slices:
             if net_slice.network in public_nets:
                 public_net_slice = net_slice

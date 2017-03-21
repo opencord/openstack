@@ -4,13 +4,12 @@ import socket
 import sys
 import base64
 import time
-from django.db.models import F, Q
 from xos.config import Config
-from synchronizers.base.SyncInstanceUsingAnsible import SyncInstanceUsingAnsible
-from synchronizers.base.syncstep import SyncStep, DeferredException
-from synchronizers.base.ansible_helper import run_template_ssh
-from core.models import Service, Slice, Instance
+from synchronizers.new_base.SyncInstanceUsingAnsible import SyncInstanceUsingAnsible
+from synchronizers.new_base.syncstep import DeferredException
+from synchronizers.new_base.ansible_helper import run_template_ssh
 from xos.logger import Logger, logging
+from synchronizers.new_base.modelaccessor import *
 
 # hpclibrary will be in steps/..
 parentdir = os.path.join(os.path.dirname(__file__),"..")
@@ -34,7 +33,7 @@ class SyncContainer(SyncInstanceUsingAnsible):
 
     def get_instance_port(self, container_port):
         for p in container_port.network.links.all():
-            if (p.instance) and (p.instance.isolation=="vm") and (p.instance.node == container_port.instance.node) and (p.mac):
+            if (p.instance) and (p.instance.isolation=="vm") and (p.instance.node.id == container_port.instance.node.id) and (p.mac):
                 return p
         return None
 

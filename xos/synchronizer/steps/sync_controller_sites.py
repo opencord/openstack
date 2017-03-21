@@ -1,13 +1,12 @@
 import os
 import base64
-from django.db.models import F, Q
 from xos.config import Config
 from synchronizers.openstack.openstacksyncstep import OpenStackSyncStep
-from core.models.site import *
-from synchronizers.base.syncstep import *
-from synchronizers.base.ansible_helper import *
+from synchronizers.new_base.syncstep import *
+from synchronizers.new_base.ansible_helper import *
 from xos.logger import observer_logger as logger
 import json
+from synchronizers.new_base.modelaccessor import *
 
 class SyncControllerSites(OpenStackSyncStep):
     requested_interval=0
@@ -16,7 +15,12 @@ class SyncControllerSites(OpenStackSyncStep):
     playbook = 'sync_controller_sites.yaml'
 
     def fetch_pending(self, deleted=False):
-        lobjs = ControllerSite.objects.filter(Q(enacted__lt=F('updated')) | Q(enacted=None),Q(lazy_blocked=False),Q(controller__isnull=False))
+        lobjs = super(SyncControllerSites, self).fetch_pending(deleted)
+
+        if not deleted:
+            # filter out objects with null controllers
+            lobjs = [x for x in lobjs if x.controller]
+
         return lobjs
 
     def map_sync_inputs(self, controller_site):

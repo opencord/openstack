@@ -1,6 +1,6 @@
+from synchronizers.new_base.modelaccessor import *
+
 def handle(controller_user):
-    from core.models import ControllerUser, User
-   
     try:
         my_status_code = int(controller_user.backend_status[0])
         try:
