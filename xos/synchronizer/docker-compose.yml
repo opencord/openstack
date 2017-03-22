@@ -1,0 +1,21 @@
+version: '2'
+
+networks:
+  xos:
+    external: true
+
+services:
+  synchronizer:
+    image: xosproject/openstack-synchronizer
+    networks:
+      - xos
+    #command: bash -c "sleep 86400"
+    volumes:
+        - /opt/cord/build/platform-install/credentials/xosadmin@opencord.org:/opt/xos/services/openstack/credentials/xosadmin@opencord.org
+    external_links: 
+        - rcordbs_xos_redis_1:redis
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1000k"
+        max-file: "5"

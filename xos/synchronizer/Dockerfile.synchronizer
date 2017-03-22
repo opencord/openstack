@@ -1,0 +1,9 @@
+FROM xosproject/xos-synchronizer-base
+
+ADD . /opt/xos/synchronizers/openstack
+
+ENTRYPOINT []
+
+WORKDIR "/opt/xos/synchronizers/openstack"
+
+CMD bash -c "cd /opt/xos/synchronizers/openstack; ./run-from-api.sh"
