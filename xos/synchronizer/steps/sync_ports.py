@@ -216,7 +216,8 @@ class SyncPorts(OpenStackSyncStep):
 
     def delete_ports(self):
         logger.info("sync'ing Ports [delete=True]")
-        for port in Port.deleted_objects.all():
+        ports = self.fetch_pending(deletion=True)
+        for port in ports:
             self.delete_record(port)
 
     def delete_record(self, port):

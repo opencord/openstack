@@ -7,7 +7,7 @@ ca_ssl_cert=/etc/ssl/certs/ca-certificates.crt
 # Sets options for the synchronizer
 [observer]
 name=openstack
-dependency_graph=/opt/xos/model-deps
+dependency_graph=/opt/xos/synchronizers/openstack/model-deps
 steps_dir=/opt/xos/synchronizers/openstack/steps
 sys_dir=/opt/xos/synchronizers/openstack/sys
 model_policies_dir=/opt/xos/synchronizers/openstack/model_policies

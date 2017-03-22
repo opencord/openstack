@@ -2,12 +2,14 @@ import os
 import base64
 import socket
 from xos.config import Config
-from xos.settings import RESTAPI_HOSTNAME, RESTAPI_PORT
 from synchronizers.openstack.openstacksyncstep import OpenStackSyncStep
 from synchronizers.new_base.ansible_helper import *
 from synchronizers.new_base.syncstep import *
 from xos.logger import observer_logger as logger
 from synchronizers.new_base.modelaccessor import *
+
+RESTAPI_HOSTNAME = getattr(Config(), "server_restapi_hostname", getattr(Config(), "server_hostname", socket.gethostname()))
+RESTAPI_PORT = int(getattr(Config(), "server_restapi_port", getattr(Config(), "server_port", "8000")))
 
 def escape(s):
     s = s.replace('\n',r'\n').replace('"',r'\"')
