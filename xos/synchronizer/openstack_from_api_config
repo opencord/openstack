@@ -4,6 +4,10 @@ nova_enabled=True
 [nova]
 ca_ssl_cert=/etc/ssl/certs/ca-certificates.crt
 
+[log]
+file=console
+level=debug
+
 # Sets options for the synchronizer
 [observer]
 name=openstack
@@ -20,6 +24,7 @@ save_ansible_output=True
 accessor_kind=api
 accessor_password=@/opt/xos/services/openstack/credentials/xosadmin@opencord.org
 images_directory=/opt/xos/images
+required_models=ControllerImages,ControllerNetwork,ControllerSitePrivilege,ControllerSite,ControllerSlicePrivilege,ControllerSlice,ControllerUser,Image,Instance,Port,Role
 
 [networking]
 use_vtn=True

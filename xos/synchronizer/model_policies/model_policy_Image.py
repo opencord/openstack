@@ -5,7 +5,7 @@ def handle(image):
         # container images do not get instantiated
         return
 
-    controller_images = ControllerImages.objects.filter(image=image)
+    controller_images = ControllerImages.objects.filter(image_id=image.id)
     existing_controllers = [cs.controller for cs in controller_images] 
     
     all_controllers = Controller.objects.all() 

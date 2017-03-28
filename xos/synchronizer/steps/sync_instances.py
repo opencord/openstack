@@ -100,9 +100,10 @@ class SyncInstances(OpenStackSyncStep):
         if (instance.numberCores):
             metadata_update["cpu_cores"] = str(instance.numberCores)
 
-        for tag in instance.slice.tags.all():
-            if tag.name.startswith("sysctl-"):
-                metadata_update[tag.name] = tag.value
+# not supported by API... assuming it's not used ... look into enabling later
+#        for tag in instance.slice.tags.all():
+#            if tag.name.startswith("sysctl-"):
+#                metadata_update[tag.name] = tag.value
 
 	slice_memberships = SlicePrivilege.objects.filter(slice_id=instance.slice.id)
         pubkeys = set([sm.user.public_key for sm in slice_memberships if sm.user.public_key])
@@ -195,6 +196,9 @@ class SyncInstances(OpenStackSyncStep):
         if instance.userData:
             userData += instance.userData
 
+        # make sure nics is pickle-able
+        sanitized_nics = [{"kind": nic["kind"], "value": nic["value"]} for nic in nics]
+
         controller = instance.node.site_deployment.controller
         fields = {'endpoint':controller.auth_url,
                      'endpoint_v3': controller.auth_url_v3,
@@ -209,7 +213,7 @@ class SyncInstances(OpenStackSyncStep):
                      'availability_zone': availability_zone_filter,
                      'image_name':image_name,
                      'flavor_name':instance.flavor.name,
-                     'nics':nics,
+                     'nics':sanitized_nics,
                      'meta':metadata_update,
                      'user_data':r'%s'%escape(userData)}
         return fields

@@ -6,4 +6,4 @@ ENTRYPOINT []
 
 WORKDIR "/opt/xos/synchronizers/openstack"
 
-CMD bash -c "cd /opt/xos/synchronizers/openstack; ./run-from-api.sh"
+CMD bash -c "update-ca-certificates; cd /opt/xos/synchronizers/openstack; ./run-from-api.sh"

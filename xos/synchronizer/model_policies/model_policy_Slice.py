@@ -20,13 +20,14 @@ def handle(slice):
     # slice = Slice.get(slice_id)
 
     controller_slices = ControllerSlice.objects.filter(slice_id=slice.id)
-    existing_controllers = [cs.controller for cs in controller_slices] 
-        
+    existing_controllers = [cs.controller for cs in controller_slices]
+    existing_controllers_ids = [x.id for x in existing_controllers]
+
     print "MODEL POLICY: slice existing_controllers=", existing_controllers
 
     all_controllers = Controller.objects.all()
     for controller in all_controllers:
-        if controller not in existing_controllers:
+        if controller.id not in existing_controllers_ids:
             print "MODEL POLICY: slice adding controller", controller
             sd = ControllerSlice(slice=slice, controller=controller)
             sd.save()

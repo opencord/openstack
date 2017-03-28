@@ -102,7 +102,7 @@ class SyncControllerNetworks(OpenStackSyncStep):
         controller_network.subnet_id = subnet_id
 	controller_network.backend_status = '1 - OK'
         if not controller_network.segmentation_id:
-            controller_network.segmentation_id = self.get_segmentation_id(controller_network)
+            controller_network.segmentation_id = str(self.get_segmentation_id(controller_network))
         controller_network.save()
 
 
