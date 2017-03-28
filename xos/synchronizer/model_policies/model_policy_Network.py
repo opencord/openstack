@@ -4,23 +4,26 @@ from collections import defaultdict
 def handle(network):
         print "MODEL POLICY: network", network
 
-        # network = Network.get(network_id)
 	# network controllers are not visible to users. We must ensure
 	# networks are deployed at all deploymets available to their slices.
+
+        # TODO: should be possible to query only the ControllerSlice objects
+        #       associated with network.owner rather than iterating through
+        #       all ControllerSlice.
+
 	slice_controllers = ControllerSlice.objects.all()
 	slice_deploy_lookup = defaultdict(list)
 	for slice_controller in slice_controllers:
-		slice_deploy_lookup[slice_controller.slice].append(slice_controller.controller)
+		slice_deploy_lookup[slice_controller.slice.id].append(slice_controller.controller)
 
 	network_controllers = ControllerNetwork.objects.all()
 	network_deploy_lookup = defaultdict(list)
 	for network_controller in network_controllers:
-		network_deploy_lookup[network_controller.network].append(network_controller.controller)
+		network_deploy_lookup[network_controller.network.id].append(network_controller.controller.id)
 
-	expected_controllers = slice_deploy_lookup[network.owner]
+	expected_controllers = slice_deploy_lookup[network.owner.id]
 	for expected_controller in expected_controllers:
-		if network not in network_deploy_lookup or \
-		  expected_controller not in network_deploy_lookup[network]:
+		if network.id not in network_deploy_lookup or expected_controller.id not in network_deploy_lookup[network.id]:
                         lazy_blocked=True
 
                         # check and see if some instance already exists

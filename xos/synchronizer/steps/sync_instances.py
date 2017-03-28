@@ -88,7 +88,7 @@ class SyncInstances(OpenStackSyncStep):
 
         # sanity check - make sure model_policy for slice has run
         if ((not instance.slice.policed) or (instance.slice.policed < instance.slice.updated)):
-            raise DeferredException("Instance %s waiting on Slice %s to execute model policies" % (instance, slice.name))
+            raise DeferredException("Instance %s waiting on Slice %s to execute model policies" % (instance, instance.slice.name))
 
         # sanity check - make sure model_policy for all slice networks have run
         for network in instance.slice.ownedNetworks.all():

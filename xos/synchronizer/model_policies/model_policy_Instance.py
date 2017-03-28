@@ -41,8 +41,8 @@ def handle_container_on_metal(instance):
                 print "MODEL POLICY: instance", instance, "created port", port
 
 def handle(instance):
-    networks = [ns.network for ns in NetworkSlice.objects.filter(slice=instance.slice)]
-    controller_networks = ControllerNetwork.objects.filter(controller=instance.node.site_deployment.controller)
+    networks = [ns.network for ns in NetworkSlice.objects.filter(slice_id=instance.slice.id)]
+    controller_networks = ControllerNetwork.objects.filter(controller_id=instance.node.site_deployment.controller.id)
 
     # a little clumsy because the API ORM doesn't support __in queries
     network_ids = [x.id for x in networks]
