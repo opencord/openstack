@@ -85,10 +85,11 @@ def handle(slice):
         net_slices = [x for x in net_slices if x.network_id in public_net_ids+private_net_ids]
 
         for net_slice in net_slices:
-            if net_slice.network in public_nets:
+            if net_slice.network.id in public_nets_ids:
                 public_net_slice = net_slice
-            elif net_slice.network in private_nets:
+            elif net_slice.network.id in private_nets_ids:
                 private_net_slice = net_slice
+                
         if support_nat_net and (not public_net_slice):
             public_net_slice = NetworkSlice(slice=slice, network=public_nets[0])
             public_net_slice.save()
