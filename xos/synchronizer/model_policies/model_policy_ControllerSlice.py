@@ -1,7 +1,13 @@
 from synchronizers.new_base.modelaccessor import *
+from synchronizers.new_base.policy import Policy
 
-def handle(controller_slice):
-    try:
+class ControllerSlicePolicy(Policy):
+    model_name = "ControllerSlice"
+
+    def handle_create(self, controller_slice):
+        return self.handle_update(controller_slice)
+
+    def handle_update(self, controller_slice):
         my_status_code = int(controller_slice.backend_status[0])
         try:
             his_status_code = int(controller_slice.slice.backend_status[0])
@@ -18,8 +24,3 @@ def handle(controller_slice):
             fields+=['backend_register']
 
         controller_slice.slice.save(update_fields = fields)
-
-        
-    except Exception,e:
-        print str(e)	
-        pass

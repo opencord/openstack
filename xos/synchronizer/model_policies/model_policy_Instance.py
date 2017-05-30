@@ -1,59 +1,23 @@
 from synchronizers.new_base.modelaccessor import *
+from synchronizers.new_base.policy import Policy
 
-def handle_container_on_metal(instance):
-        print "MODEL POLICY: instance", instance, "handle container_on_metal"
+class InstancePolicy(Policy):
+    model_name = "Instance"
 
-        if instance.deleted:
-            return
+    def handle_create(self, instance):
+        return self.handle_update(instance)
 
-        if (instance.isolation in ["container"]) and (instance.slice.network not in ["host", "bridged"]):
-            # Our current docker-on-metal network strategy requires that there be some
-            # VM on the server that connects to the networks, so that
-            # the containers can piggyback off of that configuration.
-            if not Instance.objects.filter(slice_id=instance.slice.id, node_id=instance.node.id, isolation="vm").exists():
-                flavors = Flavor.objects.filter(name="m1.small")
-                if not flavors:
-                    raise XOSConfigurationError("No m1.small flavor")
+    def handle_update(self, instance):
+        networks = [ns.network for ns in NetworkSlice.objects.filter(slice_id=instance.slice.id)]
+        controller_networks = ControllerNetwork.objects.filter(controller_id=instance.node.site_deployment.controller.id)
 
-                images = Image.objects.filter(kind="vm")
+        # a little clumsy because the API ORM doesn't support __in queries
+        network_ids = [x.id for x in networks]
+        controller_networks = [x for x in controller_networks if x.network.id in network_ids]
 
-                companion_instance = Instance(slice = instance.slice,
-                                node = instance.node,
-                                image = images[0],
-                                creator = instance.creator,
-                                deployment = instance.node.site_deployment.deployment,
-                                flavor = flavors[0])
-                companion_instance.save()
-
-                print "MODEL POLICY: instance", instance, "created companion", companion_instance
-
-        # Add the ports for the container
-        for network in instance.slice.networks.all():
-            # hmmm... The NAT ports never become ready, because sync_ports never
-            # instantiates them. Need to think about this.
-            print "MODEL POLICY: instance", instance, "handling network", network
-            if (network.name.endswith("-nat")):
-                continue
-
-            if not Port.objects.filter(network_id=network.id, instance_id=instance.id).exists():
-                port = Port(network = network, instance=instance)
-                port.save()
-                print "MODEL POLICY: instance", instance, "created port", port
-
-def handle(instance):
-    networks = [ns.network for ns in NetworkSlice.objects.filter(slice_id=instance.slice.id)]
-    controller_networks = ControllerNetwork.objects.filter(controller_id=instance.node.site_deployment.controller.id)
-
-    # a little clumsy because the API ORM doesn't support __in queries
-    network_ids = [x.id for x in networks]
-    controller_networks = [x for x in controller_networks if x.network.id in network_ids]
-
-    for cn in controller_networks:
-        if (cn.lazy_blocked):
-                print "MODEL POLICY: instance", instance, "unblocking network", cn.network
-		cn.lazy_blocked=False
-		cn.backend_register = '{}'
-		cn.save()
-
-    if (instance.isolation in ["container", "container_vm"]):
-        handle_container_on_metal(instance)
+        for cn in controller_networks:
+            if (cn.lazy_blocked):
+                    self.logger.info("MODEL POLICY: instance %s unblocking network %s" % (instance, cn.network))
+            cn.lazy_blocked=False
+            cn.backend_register = '{}'
+            cn.save()

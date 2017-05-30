@@ -1,7 +1,13 @@
 from synchronizers.new_base.modelaccessor import *
+from synchronizers.new_base.policy import Policy
 
-def handle(controller_user):
-    try:
+class ControllerUserPolicy(Policy):
+    model_name = "ControllerUser"
+
+    def handle_create(self, controller_user):
+        return self.handle_update(controller_user)
+
+    def handle_update(self, controller_user):
         my_status_code = int(controller_user.backend_status[0])
         try:
             his_status_code = int(controller_user.user.backend_status[0])
@@ -11,6 +17,3 @@ def handle(controller_user):
         if (my_status_code not in [0,his_status_code]):
             controller_user.user.backend_status = controller_user.backend_status
             controller_user.user.save(update_fields = ['backend_status'])
-    except Exception,e:
-        print str(e)	
-        pass
