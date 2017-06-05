@@ -12,5 +12,5 @@ topology_template:
       properties:
           base_url: file:///opt/xos_services/openstack/xos/
           synchronizer: synchronizer/manifest
-          synchronizer_run: xos-synchronizer.py
+          synchronizer_run: openstack-synchronizer.py
 

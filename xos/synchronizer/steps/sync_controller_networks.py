@@ -3,12 +3,10 @@ import base64
 import struct
 import socket
 from netaddr import IPAddress, IPNetwork
-from xos.config import Config
 from synchronizers.openstack.openstacksyncstep import OpenStackSyncStep
 from synchronizers.new_base.syncstep import *
 from xos.logger import observer_logger as logger
 from synchronizers.new_base.ansible_helper import *
-from xos.config import Config
 from synchronizers.new_base.modelaccessor import *
 
 class SyncControllerNetworks(OpenStackSyncStep):
@@ -89,7 +87,7 @@ class SyncControllerNetworks(OpenStackSyncStep):
                     'gateway': controller_network.gateway,
                     'start_ip':start_ip,
                     'end_ip':end_ip,
-                    'use_vtn':getattr(Config(), "networking_use_vtn", False),
+                    'use_vtn':True,
                     'delete':False
                     }
         return network_fields

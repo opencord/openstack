@@ -1,9 +1,5 @@
-from xos.config import Config
-
-try:
-    observer_disabled = Config().observer_disabled
-except:
-    observer_disabled = False
+# FIXME this file needs a refactoring
+observer_disabled = False
 
 def EnableObserver(x):
     """ used for manage.py --noobserver """

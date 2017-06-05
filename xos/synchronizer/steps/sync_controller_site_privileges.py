@@ -1,7 +1,6 @@
 import os
 import base64
 import json
-from xos.config import Config
 from synchronizers.openstack.openstacksyncstep import OpenStackSyncStep
 from synchronizers.new_base.syncstep import *
 from xos.logger import observer_logger as logger

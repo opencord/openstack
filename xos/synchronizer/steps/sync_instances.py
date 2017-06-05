@@ -1,33 +1,35 @@
 import os
 import base64
 import socket
-from xos.config import Config
 from synchronizers.openstack.openstacksyncstep import OpenStackSyncStep
 from synchronizers.new_base.ansible_helper import *
 from synchronizers.new_base.syncstep import *
 from xos.logger import observer_logger as logger
 from synchronizers.new_base.modelaccessor import *
 
-RESTAPI_HOSTNAME = getattr(Config(), "server_restapi_hostname", getattr(Config(), "server_hostname", socket.gethostname()))
-RESTAPI_PORT = int(getattr(Config(), "server_restapi_port", getattr(Config(), "server_port", "8000")))
+RESTAPI_HOSTNAME = socket.gethostname()
+RESTAPI_PORT = "8000"
+
 
 def escape(s):
-    s = s.replace('\n',r'\n').replace('"',r'\"')
+    s = s.replace('\n', r'\n').replace('"', r'\"')
     return s
 
+
 class SyncInstances(OpenStackSyncStep):
-    provides=[Instance]
-    requested_interval=0
-    observes=Instance
-    playbook='sync_instances.yaml'
+    provides = [Instance]
+    requested_interval = 0
+    observes = Instance
+    playbook = 'sync_instances.yaml'
 
     def fetch_pending(self, deletion=False):
         objs = super(SyncInstances, self).fetch_pending(deletion)
-        objs = [x for x in objs if x.isolation=="vm"]
+        objs = [x for x in objs if x.isolation == "vm"]
         return objs
 
     def get_userdata(self, instance, pubkeys):
-        userdata = '#cloud-config\n\nopencloud:\n   slicename: "%s"\n   hostname: "%s"\n   restapi_hostname: "%s"\n   restapi_port: "%s"\n' % (instance.slice.name, instance.node.name, RESTAPI_HOSTNAME, str(RESTAPI_PORT))
+        userdata = '#cloud-config\n\nopencloud:\n   slicename: "%s"\n   hostname: "%s"\n   restapi_hostname: "%s"\n   restapi_port: "%s"\n' % (
+        instance.slice.name, instance.node.name, RESTAPI_HOSTNAME, str(RESTAPI_PORT))
         userdata += 'ssh_authorized_keys:\n'
         for key in pubkeys:
             userdata += '  - %s\n' % key
@@ -36,7 +38,7 @@ class SyncInstances(OpenStackSyncStep):
     def get_nic_for_first_slot(self, nics):
         # Try to find a NIC with "public" visibility
         for nic in nics[:]:
-            network=nic.get("network", None)
+            network = nic.get("network", None)
             if network:
                 tem = network.template
                 if (tem.visibility == "public"):
@@ -44,11 +46,11 @@ class SyncInstances(OpenStackSyncStep):
 
         # Otherwise try to find a private network
         for nic in nics[:]:
-            network=nic.get("network", None)
+            network = nic.get("network", None)
             if network:
                 tem = network.template
-                if (tem.visibility == "private") and (tem.translation=="none") and ("management" not in tem.name):
-                   return nic
+                if (tem.visibility == "private") and (tem.translation == "none") and ("management" not in tem.name):
+                    return nic
 
         raise Exception("Could not find a NIC for first slot")
 
@@ -69,13 +71,13 @@ class SyncInstances(OpenStackSyncStep):
 
         # move the management network to the second spot
         for nic in nics[:]:
-            network=nic.get("network", None)
+            network = nic.get("network", None)
             if network:
                 tem = network.template
-                if (tem.visibility == "private") and (tem.translation=="none") and ("management" in tem.name):
-#MCORD
-#                    if len(result)!=1:
-#                        raise Exception("Management network needs to be inserted in slot 1, but there are %d private nics" % len(result))
+                if (tem.visibility == "private") and (tem.translation == "none") and ("management" in tem.name):
+                    # MCORD
+                    #                    if len(result)!=1:
+                    #                        raise Exception("Management network needs to be inserted in slot 1, but there are %d private nics" % len(result))
                     result.append(nic)
                     nics.remove(nic)
 
@@ -88,24 +90,26 @@ class SyncInstances(OpenStackSyncStep):
 
         # sanity check - make sure model_policy for slice has run
         if ((not instance.slice.policed) or (instance.slice.policed < instance.slice.updated)):
-            raise DeferredException("Instance %s waiting on Slice %s to execute model policies" % (instance, instance.slice.name))
+            raise DeferredException(
+                "Instance %s waiting on Slice %s to execute model policies" % (instance, instance.slice.name))
 
         # sanity check - make sure model_policy for all slice networks have run
         for network in instance.slice.ownedNetworks.all():
             if ((not network.policed) or (network.policed < network.updated)):
-                raise DeferredException("Instance %s waiting on Network %s to execute model policies" % (instance, network.name))
+                raise DeferredException(
+                    "Instance %s waiting on Network %s to execute model policies" % (instance, network.name))
 
         inputs = {}
-	metadata_update = {}
+        metadata_update = {}
         if (instance.numberCores):
             metadata_update["cpu_cores"] = str(instance.numberCores)
 
-# not supported by API... assuming it's not used ... look into enabling later
-#        for tag in instance.slice.tags.all():
-#            if tag.name.startswith("sysctl-"):
-#                metadata_update[tag.name] = tag.value
+        # not supported by API... assuming it's not used ... look into enabling later
+        #        for tag in instance.slice.tags.all():
+        #            if tag.name.startswith("sysctl-"):
+        #                metadata_update[tag.name] = tag.value
 
-	slice_memberships = SlicePrivilege.objects.filter(slice_id=instance.slice.id)
+        slice_memberships = SlicePrivilege.objects.filter(slice_id=instance.slice.id)
         pubkeys = set([sm.user.public_key for sm in slice_memberships if sm.user.public_key])
         if instance.creator.public_key:
             pubkeys.add(instance.creator.public_key)
@@ -116,10 +120,10 @@ class SyncInstances(OpenStackSyncStep):
         if instance.slice.service and instance.slice.service.public_key:
             pubkeys.add(instance.slice.service.public_key)
 
-        nics=[]
+        nics = []
 
         # handle ports the were created by the user
-        port_ids=[]
+        port_ids = []
         for port in Port.objects.filter(instance_id=instance.id):
             if not port.port_id:
                 raise DeferredException("Instance %s waiting on port %s" % (instance, port))
@@ -129,22 +133,26 @@ class SyncInstances(OpenStackSyncStep):
         existing_port_networks = [port.network for port in Port.objects.filter(instance_id=instance.id)]
         existing_port_network_ids = [x.id for x in existing_port_networks]
 
-        networks = [ns.network for ns in NetworkSlice.objects.filter(slice_id=instance.slice.id) if ns.network.id not in existing_port_network_ids]
+        networks = [ns.network for ns in NetworkSlice.objects.filter(slice_id=instance.slice.id) if
+                    ns.network.id not in existing_port_network_ids]
         networks_ids = [x.id for x in networks]
-        controller_networks = ControllerNetwork.objects.filter(controller_id=instance.node.site_deployment.controller.id)
+        controller_networks = ControllerNetwork.objects.filter(
+            controller_id=instance.node.site_deployment.controller.id)
         controller_networks = [x for x in controller_networks if x.id in networks_ids]
 
-
         for network in networks:
-           if not ControllerNetwork.objects.filter(network_id=network.id, controller_id=instance.node.site_deployment.controller.id).exists():
-              raise DeferredException("Instance %s Private Network %s lacks ControllerNetwork object" % (instance, network.name))
+            if not ControllerNetwork.objects.filter(network_id=network.id,
+                                                    controller_id=instance.node.site_deployment.controller.id).exists():
+                raise DeferredException(
+                    "Instance %s Private Network %s lacks ControllerNetwork object" % (instance, network.name))
 
         for controller_network in controller_networks:
             # Lenient exception - causes slow backoff
             if controller_network.network.template.translation == 'none':
-                   if not controller_network.net_id:
-                        raise DeferredException("Instance %s Private Network %s has no id; Try again later" % (instance, controller_network.network.name))
-                   nics.append({"kind": "net", "value": controller_network.net_id, "network": controller_network.network})
+                if not controller_network.net_id:
+                    raise DeferredException("Instance %s Private Network %s has no id; Try again later" % (
+                    instance, controller_network.network.name))
+                nics.append({"kind": "net", "value": controller_network.net_id, "network": controller_network.network})
 
         # now include network template
         network_templates = [network.template.shared_network_name for network in networks \
@@ -158,14 +166,15 @@ class SyncInstances(OpenStackSyncStep):
 
         if (not nics):
             for net in nets:
-                if net['name']=='public':
+                if net['name'] == 'public':
                     nics.append({"kind": "net", "value": net['id'], "network": None})
 
         nics = self.sort_nics(nics)
 
         image_name = None
         controller_images = instance.image.controllerimages.all()
-        controller_images = [x for x in controller_images if x.controller_id==instance.node.site_deployment.controller.id]
+        controller_images = [x for x in controller_images if
+                             x.controller_id == instance.node.site_deployment.controller.id]
         if controller_images:
             image_name = controller_images[0].image.name
             logger.info("using image from ControllerImage object: " + str(image_name))
@@ -178,18 +187,10 @@ class SyncInstances(OpenStackSyncStep):
                     image_name = image.name
                     logger.info("using image from glance: " + str(image_name))
 
-	try:
-            legacy = Config().observer_legacy
-        except:
-            legacy = False
+        host_filter = instance.node.name.strip()
 
-        if (legacy):
-            host_filter = instance.node.name.split('.',1)[0]
-        else:
-            host_filter = instance.node.name.strip()
-
-        availability_zone_filter = 'nova:%s'%host_filter
-        instance_name = '%s-%d'%(instance.slice.name,instance.id)
+        availability_zone_filter = 'nova:%s' % host_filter
+        instance_name = '%s-%d' % (instance.slice.name, instance.id)
         self.instance_name = instance_name
 
         userData = self.get_userdata(instance, pubkeys)
@@ -200,30 +201,29 @@ class SyncInstances(OpenStackSyncStep):
         sanitized_nics = [{"kind": nic["kind"], "value": nic["value"]} for nic in nics]
 
         controller = instance.node.site_deployment.controller
-        fields = {'endpoint':controller.auth_url,
-                     'endpoint_v3': controller.auth_url_v3,
-                     'domain': controller.domain,
-                     'admin_user': instance.creator.email,
-                     'admin_password': instance.creator.remote_password,
-                     'project_name': instance.slice.name,
-                     'tenant': instance.slice.name,
-                     'tenant_description': instance.slice.description,
-                     'name':instance_name,
-                     'ansible_tag':instance_name,
-                     'availability_zone': availability_zone_filter,
-                     'image_name':image_name,
-                     'flavor_name':instance.flavor.name,
-                     'nics':sanitized_nics,
-                     'meta':metadata_update,
-                     'user_data':r'%s'%escape(userData)}
+        fields = {'endpoint': controller.auth_url,
+                  'endpoint_v3': controller.auth_url_v3,
+                  'domain': controller.domain,
+                  'admin_user': instance.creator.email,
+                  'admin_password': instance.creator.remote_password,
+                  'project_name': instance.slice.name,
+                  'tenant': instance.slice.name,
+                  'tenant_description': instance.slice.description,
+                  'name': instance_name,
+                  'ansible_tag': instance_name,
+                  'availability_zone': availability_zone_filter,
+                  'image_name': image_name,
+                  'flavor_name': instance.flavor.name,
+                  'nics': sanitized_nics,
+                  'meta': metadata_update,
+                  'user_data': r'%s' % escape(userData)}
         return fields
 
-
     def map_sync_outputs(self, instance, res):
-	instance_id = res[0]['openstack']['OS-EXT-SRV-ATTR:instance_name']
+        instance_id = res[0]['openstack']['OS-EXT-SRV-ATTR:instance_name']
         instance_uuid = res[0]['id']
 
-	try:
+        try:
             hostname = res[0]['openstack']['OS-EXT-SRV-ATTR:hypervisor_hostname']
             ip = socket.gethostbyname(hostname)
             instance.ip = ip
@@ -234,23 +234,22 @@ class SyncInstances(OpenStackSyncStep):
         instance.instance_uuid = instance_uuid
         instance.instance_name = self.instance_name
         instance.save()
-	
-	
+
     def map_delete_inputs(self, instance):
         controller_register = json.loads(instance.node.site_deployment.controller.backend_register)
 
-        if (controller_register.get('disabled',False)):
-            raise InnocuousException('Controller %s is disabled'%instance.node.site_deployment.controller.name)
+        if (controller_register.get('disabled', False)):
+            raise InnocuousException('Controller %s is disabled' % instance.node.site_deployment.controller.name)
 
-        instance_name = '%s-%d'%(instance.slice.name,instance.id)
+        instance_name = '%s-%d' % (instance.slice.name, instance.id)
         controller = instance.node.site_deployment.controller
-        input = {'endpoint':controller.auth_url,
-                     'admin_user': instance.creator.email,
-                     'admin_password': instance.creator.remote_password,
-                     'project_name': instance.slice.name,
-                     'tenant': instance.slice.name,
-                     'tenant_description': instance.slice.description,
-                     'name':instance_name,
-                     'ansible_tag':instance_name,
-                     'delete': True}
+        input = {'endpoint': controller.auth_url,
+                 'admin_user': instance.creator.email,
+                 'admin_password': instance.creator.remote_password,
+                 'project_name': instance.slice.name,
+                 'tenant': instance.slice.name,
+                 'tenant_description': instance.slice.description,
+                 'name': instance_name,
+                 'ansible_tag': instance_name,
+                 'delete': True}
         return input

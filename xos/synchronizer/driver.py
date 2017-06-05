@@ -1,6 +1,6 @@
 import commands
 import hashlib
-from xos.config import Config
+from xosconfig import Config
 from synchronizers.new_base.modelaccessor import *
 
 try:
@@ -9,15 +9,11 @@ try:
 except:
     has_openstack = False
 
-manager_enabled = Config().api_nova_enabled
+manager_enabled = Config.get("nova.enabled")
 
 class OpenStackDriver:
 
     def __init__(self, config = None, client=None):
-        if config:
-            self.config = Config(config)
-        else:
-            self.config = Config()
 
         if client:
             self.shell = client
@@ -32,7 +28,7 @@ class OpenStackDriver:
             auth = {'username': caller.email,
                     'password': hashlib.md5(caller.password).hexdigest()[:6],
                     'tenant': tenant}
-            client = OpenStackClient(controller=controller, cacert=self.config.nova_ca_ssl_cert, **auth)
+            client = OpenStackClient(controller=controller, cacert=Config.get("nova.ca_ssl_cert"), **auth)
         else:
             admin_driver = self.admin_driver(tenant=tenant, controller=controller)
             client = OpenStackClient(tenant=tenant, controller=admin_driver.controller)
@@ -47,7 +43,7 @@ class OpenStackDriver:
             controller = Controller.objects.get(id=controller.id)
         if not tenant:
             tenant = controller.admin_tenant
-        client = OpenStackClient(tenant=tenant, controller=controller, cacert=self.config.nova_ca_ssl_cert)
+        client = OpenStackClient(tenant=tenant, controller=controller, cacert=Config.get("nova.ca_ssl_cert"))
         driver = OpenStackDriver(client=client)
         driver.admin_user = client.keystone.users.find(name=controller.admin_user)
         driver.controller = controller
@@ -425,12 +421,12 @@ class OpenStackDriver:
 
     def spawn_instance(self, name, key_name=None, availability_zone=None, hostname=None, image_id=None, security_group=None, pubkeys=[], nics=None, metadata=None, userdata=None, flavor_name=None):
         if not flavor_name:
-            flavor_name = self.config.nova_default_flavor
+            flavor_name = Config.get("nova.default_flavor")
 
         flavor = self.shell.nova.flavors.find(name=flavor_name)
 
         if not security_group:
-            security_group = self.config.nova_default_security_group
+            security_group = Config.get("nova.default_security_group")
 
         files = {}
         #if pubkeys:
