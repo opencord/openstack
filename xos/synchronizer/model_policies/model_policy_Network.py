@@ -9,26 +9,26 @@ class NetworkPolicy(Policy):
         return self.handle_update(network)
 
     def handle_update(self, network):
-        # network controllers are not visible to users. We must ensure
-        # networks are deployed at all deploymets available to their slices.
+        # if (not network.owner.policed) or (network.owner.policed<network.owner.updated):
+        #    raise Exception("Cannot apply network policies until slice policies have completed")
 
-        # TODO: should be possible to query only the ControllerSlice objects
-        #       associated with network.owner rather than iterating through
-        #       all ControllerSlice.
+        #expected_controllers = []
+        #for slice_controller in ControllerSlice.objects.all():
+        #    if slice_controller.slice.id == network.owner.id:
+        #        expected_controllers.append(slice_controller.controller)
 
-        slice_controllers = ControllerSlice.objects.all()
-        slice_deploy_lookup = defaultdict(list)
-        for slice_controller in slice_controllers:
-            slice_deploy_lookup[slice_controller.slice.id].append(slice_controller.controller)
+        # For simplicity, let's assume that a network gets deployed on all controllers.
+        expected_controllers =  Controller.objects.all()
 
-        network_controllers = ControllerNetwork.objects.all()
-        network_deploy_lookup = defaultdict(list)
-        for network_controller in network_controllers:
-            network_deploy_lookup[network_controller.network.id].append(network_controller.controller.id)
+        existing_controllers = []
+        for cn in ControllerNetwork.objects.all():
+            if cn.network.id == network.id:
+                existing_controllers.append(controller)
 
-        expected_controllers = slice_deploy_lookup[network.owner.id]
+        existing_controller_ids = [c.id for c in existing_controllers]
+
         for expected_controller in expected_controllers:
-            if network.id not in network_deploy_lookup or expected_controller.id not in network_deploy_lookup[network.id]:
+            if expected_controller.id not in existing_controller_ids:
                 lazy_blocked=True
 
                 # check and see if some instance already exists
