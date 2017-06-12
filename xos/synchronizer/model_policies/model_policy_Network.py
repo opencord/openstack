@@ -23,7 +23,7 @@ class NetworkPolicy(Policy):
         existing_controllers = []
         for cn in ControllerNetwork.objects.all():
             if cn.network.id == network.id:
-                existing_controllers.append(controller)
+                existing_controllers.append(cn.controller)
 
         existing_controller_ids = [c.id for c in existing_controllers]
 
