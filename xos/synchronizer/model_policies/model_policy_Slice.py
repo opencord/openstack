@@ -78,9 +78,9 @@ class SlicePolicy(Policy):
             net_slices = [x for x in net_slices if x.network_id in public_net_ids+private_net_ids]
 
             for net_slice in net_slices:
-                if net_slice.network.id in public_nets_ids:
+                if net_slice.network.id in public_net_ids:
                     public_net_slice = net_slice
-                elif net_slice.network.id in private_nets_ids:
+                elif net_slice.network.id in private_net_ids:
                     private_net_slice = net_slice
             if support_nat_net and (not public_net_slice):
                 public_net_slice = NetworkSlice(slice=slice, network=public_nets[0])
@@ -92,7 +92,7 @@ class SlicePolicy(Policy):
                 self.logger.info("MODEL POLICY: slice %s made private_net_slice" % slice)
 
     # TODO: This feels redundant with the reaper
-    def handle_delete(slice):
+    def handle_delete(self, slice):
         public_nets = []
         private_net = None
         networks = Network.objects.filter(owner_id=slice.id)
