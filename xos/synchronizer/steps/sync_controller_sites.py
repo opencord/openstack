@@ -39,21 +39,22 @@ class SyncControllerSites(OpenStackSyncStep):
 
     def map_sync_inputs(self, controller_site):
 	tenant_fields = {'endpoint':controller_site.controller.auth_url,
-                 'endpoint_v3': controller_site.controller.auth_url_v3,
-                 'domain': controller_site.controller.domain,
-		         'admin_user': controller_site.controller.admin_user,
-		         'admin_password': controller_site.controller.admin_password,
-		         'admin_tenant': controller_site.controller.admin_tenant,
-	             'ansible_tag': '%s@%s'%(controller_site.site.login_base,controller_site.controller.name), # name of ansible playbook
-		         'tenant': controller_site.site.login_base,
-		         'tenant_description': controller_site.site.name}
+            'endpoint_v3': controller_site.controller.auth_url_v3,
+            'domain': controller_site.controller.domain,
+            'admin_user': controller_site.controller.admin_user,
+            'admin_password': controller_site.controller.admin_password,
+            'admin_tenant': controller_site.controller.admin_tenant,
+            'admin_project': 'admin',
+            'ansible_tag': '%s@%s'%(controller_site.site.login_base,controller_site.controller.name), # name of ansible playbook
+            'project': controller_site.site.login_base,
+            'project_description': controller_site.site.name}
         return tenant_fields
 
     def map_sync_outputs(self, controller_site, res):
 	controller_site.tenant_id = res[0]['id']
 	controller_site.backend_status = '1 - OK'
         controller_site.save()
-            
+
     def delete_record(self, controller_site):
 	controller_register = json.loads(controller_site.controller.backend_register)
         if (controller_register.get('disabled',False)):

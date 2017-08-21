@@ -18,4 +18,14 @@
 - hosts: 127.0.0.1
   connection: local
   tasks:
-  - keystone_user: endpoint={{ endpoint }} login_user={{ admin_user }} login_password={{ admin_password }} login_tenant_name={{ admin_tenant }} tenant={{ tenant }} tenant_description="{{ tenant_description }}"
+
+  - name: Create XOS site (OpenStack project)
+    os_project:
+      auth:
+        auth_url: "{{ endpoint }}"
+        username: "{{ admin_user }}"
+        password: "{{ admin_password }}"
+        project_name: "{{ admin_project }}"
+      name: "{{ project }}"
+      description: "{{ project_description }}"
+

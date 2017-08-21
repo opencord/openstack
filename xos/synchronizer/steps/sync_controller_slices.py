@@ -50,11 +50,11 @@ class SyncControllerSlices(OpenStackSyncStep):
                          'domain': controller_slice.controller.domain,
                          'admin_user': controller_slice.controller.admin_user,
                          'admin_password': controller_slice.controller.admin_password,
-                         'admin_tenant': 'admin',
-                         'tenant': controller_slice.slice.name,
-                         'tenant_description': controller_slice.slice.description,
+                         'admin_project': 'admin',
+                         'project': controller_slice.slice.name,
+                         'project_description': controller_slice.slice.description,
                          'roles':roles,
-                         'name':controller_user.user.email,
+                         'username':controller_user.user.email,
                          'ansible_tag':'%s@%s'%(controller_slice.slice.name,controller_slice.controller.name),
                          'max_instances':max_instances}
 

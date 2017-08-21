@@ -18,11 +18,41 @@
 - hosts: 127.0.0.1
   connection: local
   tasks:
-  {% if delete -%}
-  - keystone_user: endpoint={{ endpoint }} login_user={{ admin_user }} login_password={{ admin_password }} login_tenant_name={{ admin_tenant }} tenant={{ tenant }} tenant_description="{{ tenant_description }}" state=absent
-  {% else -%}
-  - keystone_user: endpoint={{ endpoint }} login_user={{ admin_user }} login_password={{ admin_password }} login_tenant_name={{ admin_tenant }} tenant={{ tenant }} tenant_description="{{ tenant_description }}"
-  {% for role in roles %}
-  - keystone_user: endpoint={{ endpoint }} login_user={{ admin_user }} login_password={{ admin_password }} login_tenant_name={{ admin_tenant }} user="{{ name }}" role={{ role }} tenant={{ tenant }}
-  {% endfor %}
-  {% endif %}
+
+  - name: Create XOS slice (OpenStack project)
+    os_project:
+      auth:
+        auth_url: "{{ endpoint }}"
+        username: "{{ admin_user }}"
+        password: "{{ admin_password }}"
+        project_name: "{{ admin_project }}"
+      name: "{{ project }}"
+{% if delete %}
+      state: absent
+{% else %}
+      description: "{{ project_description }}"
+
+{% for role in roles %}
+  - name: Create role "{{ role }}"
+    os_keystone_role:
+      auth:
+        auth_url: "{{ endpoint }}"
+        username: "{{ admin_user }}"
+        password: "{{ admin_password }}"
+        project_name: "{{ admin_project }}"
+      name: "{{ role }}"
+
+  - name: Create users with roles in slice
+    os_user_role:
+      auth:
+        auth_url: "{{ endpoint }}"
+        username: "{{ admin_user }}"
+        password: "{{ admin_password }}"
+        project_name: "{{ admin_project }}"
+      user: "{{ username }}"
+      role: "{{ role }}"
+      project: "{{ project }}"
+
+{% endfor %}
+{% endif %}
+

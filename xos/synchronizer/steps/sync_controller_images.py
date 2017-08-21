@@ -38,6 +38,7 @@ class SyncControllerImages(OpenStackSyncStep):
                         'endpoint_v3': controller_image.controller.auth_url_v3,
                         'admin_user':controller_image.controller.admin_user,
                         'admin_password':controller_image.controller.admin_password,
+                        'admin_project': 'admin',
                         'domain': controller_image.controller.domain,
                         'name':controller_image.image.name,
                         'filepath':controller_image.image.path,

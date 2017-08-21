@@ -21,46 +21,44 @@
 
   - name: Create user account for "{{ name }}"
     os_user:
+      auth:
+        auth_url: "{{ endpoint }}"
+        username: "{{ admin_user }}"
+        password: "{{ admin_password }}"
+        project_name: "{{ admin_project }}"
       name: "{{ name }}"
       email: "{{ email }}"
       password: "{{ password }}"
-      auth:
-        auth_url: {{ endpoint }}
-        username: {{ admin_user }}
-        password: {{ admin_password }}
-        project_name: {{ admin_project }}
 
   - name: Create project for "{{ project }}"
     os_project:
-      name: "{{ project }}"
       auth:
-        auth_url: {{ endpoint }}
-        username: {{ admin_user }}
-        password: {{ admin_password }}
-        project_name: {{ admin_project }}
+        auth_url: "{{ endpoint }}"
+        username: "{{ admin_user }}"
+        password: "{{ admin_password }}"
+        project_name: "{{ admin_project }}"
+      name: "{{ project }}"
 
 {% for role in roles %}
-  - name: Creating role "{{ role }}" for "{{ name }}" on "{{ project }}"
-    keystone_user:
+  - name: Create role "{{ role }}"
+    os_keystone_role:
+      auth:
+        auth_url: "{{ endpoint }}"
+        username: "{{ admin_user }}"
+        password: "{{ admin_password }}"
+        project_name: "{{ admin_project }}"
+      name: "{{ role }}"
+
+  - name: Add role "{{ role }}" to user "{{ name }}" on project "{{ project }}"
+    os_user_role:
+      auth:
+        auth_url: "{{ endpoint }}"
+        username: "{{ admin_user }}"
+        password: "{{ admin_password }}"
+        project_name: "{{ admin_project }}"
       user: "{{ name }}"
       role: "{{ role }}"
-      tenant: "{{ project }}"
-      endpoint: {{ endpoint }}
-      login_user: {{ admin_user }}
-      login_password: {{ admin_password }}
-      login_tenant_name: {{ admin_project }}
+      project: "{{ project }}"
+
 {% endfor %}
 
-# FIXME: the below should work in Ansible 2.1, once we get the Admin/admin and
-# Member/user role name issues straightened out.
-#
-#  - name: Creating role "{{ role }}" for "{{ name }}" on "{{ project }}"
-#    os_user_role:
-#      user: "{{ name }}"
-#      role: "{{ role }}"
-#      project: "{{ project }}"
-#      auth:
-#        auth_url: {{ endpoint }}
-#        username: {{ admin_user }}
-#        password: {{ admin_password }}
-#        project_name: {{ admin_project }}

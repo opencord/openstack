@@ -19,19 +19,19 @@
   connection: local
   tasks:
   - os_server:
-      name: {{ name }}
+      name: "{{ name }}"
       auth:
-        auth_url: {{ endpoint }}
-        username: {{ admin_user }}
-        password: {{ admin_password }}
-        project_name: {{ project_name }}
+        auth_url: "{{ endpoint }}"
+        username: "{{ admin_user }}"
+        password: "{{ admin_password }}"
+        project_name: "{{ project_name }}"
       {% if delete -%}
       state: absent
       {% else -%}
       state: present
       availability_zone: "{{ availability_zone }}"
-      image: {{ image_name }}
-      flavor: {{ flavor_name }}
+      image: "{{ image_name }}"
+      flavor: "{{ flavor_name }}"
       timeout: 200
       userdata: "{{ user_data }}"
       config_drive: yes
