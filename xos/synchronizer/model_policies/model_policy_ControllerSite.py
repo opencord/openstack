@@ -24,9 +24,9 @@ class ControllerSitePolicy(Policy):
         return self.handle_update(controller_site)
 
     def handle_update(self, controller_site):
-        my_status_code = int(controller_site.backend_status[0])
+        my_status_code = int(controller_site.backend_code)
         try:
-            his_status_code = int(controller_site.site.backend_status[0])
+            his_status_code = int(controller_site.backend_code)
         except:
             his_status_code = 0
 

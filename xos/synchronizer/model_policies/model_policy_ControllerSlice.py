@@ -24,9 +24,9 @@ class ControllerSlicePolicy(Policy):
         return self.handle_update(controller_slice)
 
     def handle_update(self, controller_slice):
-        my_status_code = int(controller_slice.backend_status[0])
+        my_status_code = int(controller_slice.backend_code)
         try:
-            his_status_code = int(controller_slice.slice.backend_status[0])
+            his_status_code = int(controller_slice.slice.backend_code)
         except:
             his_status_code = 0
  

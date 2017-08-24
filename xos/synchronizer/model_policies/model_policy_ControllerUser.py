@@ -24,9 +24,9 @@ class ControllerUserPolicy(Policy):
         return self.handle_update(controller_user)
 
     def handle_update(self, controller_user):
-        my_status_code = int(controller_user.backend_status[0])
+        my_status_code = int(controller_user.backend_code)
         try:
-            his_status_code = int(controller_user.user.backend_status[0])
+            his_status_code = int(controller_user.user.backend_code)
         except:
             his_status_code = 0
  
