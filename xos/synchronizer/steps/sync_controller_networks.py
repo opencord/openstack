@@ -114,7 +114,8 @@ class SyncControllerNetworks(OpenStackSyncStep):
         controller_network.net_id = network_id
         controller_network.subnet = self.cidr
         controller_network.subnet_id = subnet_id
-	controller_network.backend_status = '1 - OK'
+	controller_network.backend_status = 'OK'
+	controller_network.backend_code = 1
         if not controller_network.segmentation_id:
             controller_network.segmentation_id = str(self.get_segmentation_id(controller_network))
         controller_network.save()

@@ -63,7 +63,8 @@ class SyncControllerUsers(OpenStackSyncStep):
 
     def map_sync_outputs(self, controller_user, res):
         controller_user.kuser_id = res[0]['user']['id']
-        controller_user.backend_status = '1 - OK'
+        controller_user.backend_status = 'OK'
+        controller_user.backend_code = 1
         controller_user.save()
 
     def delete_record(self, controller_user):
