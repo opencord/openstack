@@ -50,5 +50,6 @@ class SyncControllerImages(OpenStackSyncStep):
     def map_sync_outputs(self, controller_image, res):
         image_id = res[0]['id']
         controller_image.glance_image_id = image_id
-	controller_image.backend_status = '1 - OK'
+	controller_image.backend_status = 'OK'
+	controller_image.backend_code = 1
         controller_image.save()

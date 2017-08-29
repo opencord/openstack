@@ -52,7 +52,8 @@ class SyncControllerSites(OpenStackSyncStep):
 
     def map_sync_outputs(self, controller_site, res):
 	controller_site.tenant_id = res[0]['project']['id']
-	controller_site.backend_status = '1 - OK'
+	controller_site.backend_status = 'OK'
+	controller_site.backend_code = 1
         controller_site.save()
 
     def delete_record(self, controller_site):
