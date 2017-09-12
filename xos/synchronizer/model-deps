@@ -299,8 +299,7 @@
         ["NetworkTemplate", "template", "network"],
         ["Slice", "owner", "ownedNetworks"],
         ["Slice", "permitted_slices", "availableNetworks"],
-        ["Slice", "slices", "networks"],
-        ["Instance", "instances", "networks"]
+        ["Slice", "slices", "networks"]
         
     ], 
     
