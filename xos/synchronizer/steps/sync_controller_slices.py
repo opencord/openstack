@@ -87,9 +87,9 @@ class SyncControllerSlices(OpenStackSyncStep):
         tenant_fields = {'endpoint':controller_slice.controller.auth_url,
                           'admin_user': controller_slice.controller.admin_user,
                           'admin_password': controller_slice.controller.admin_password,
-                          'admin_tenant': 'admin',
-                          'tenant': controller_slice.slice.name,
-                          'tenant_description': controller_slice.slice.description,
+                          'admin_project': 'admin',
+                          'project': controller_slice.slice.name,
+                          'project_description': controller_slice.slice.description,
                           'name':controller_user.user.email,
                           'ansible_tag':'%s@%s'%(controller_slice.slice.name,controller_slice.controller.name),
                           'delete': True}
