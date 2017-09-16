@@ -275,6 +275,7 @@
         ["Deployment", "deployment", "instance_deployment"],
         ["Node", "node", "instances"],
         ["Flavor", "flavor", "instance"],
+        ["ControllerNetwork", "fake_accessor", "fake_accessor"],
         ["Instance", "parent", "instance"]
         
     ], 
