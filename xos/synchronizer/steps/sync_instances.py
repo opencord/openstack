@@ -154,7 +154,7 @@ class SyncInstances(OpenStackSyncStep):
         networks_ids = [x.id for x in networks]
         controller_networks = ControllerNetwork.objects.filter(
             controller_id=instance.node.site_deployment.controller.id)
-        controller_networks = [x for x in controller_networks if x.id in networks_ids]
+        controller_networks = [x for x in controller_networks if x.network_id in networks_ids]
 
         for network in networks:
             if not ControllerNetwork.objects.filter(network_id=network.id,
