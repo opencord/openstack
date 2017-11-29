@@ -85,8 +85,8 @@ class SyncControllerNetworks(OpenStackSyncStep):
         else:
             end_ip = None
 
-        self.cidr=cidr
         slice = controller_network.network.owner
+        controller_network.subnet = cidr
 
         controller_network.gateway = self.alloc_gateway(cidr)
 
@@ -112,7 +112,6 @@ class SyncControllerNetworks(OpenStackSyncStep):
         network_id = res[0]['network']['id']
         subnet_id = res[1]['subnet']['id']
         controller_network.net_id = network_id
-        controller_network.subnet = self.cidr
         controller_network.subnet_id = subnet_id
 	controller_network.backend_status = 'OK'
 	controller_network.backend_code = 1
