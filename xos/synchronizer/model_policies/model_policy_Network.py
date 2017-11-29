@@ -25,14 +25,6 @@ class NetworkPolicy(Policy):
         return self.handle_update(network)
 
     def handle_update(self, network):
-        # if (not network.owner.policed) or (network.owner.policed<network.owner.updated):
-        #    raise Exception("Cannot apply network policies until slice policies have completed")
-
-        #expected_controllers = []
-        #for slice_controller in ControllerSlice.objects.all():
-        #    if slice_controller.slice.id == network.owner.id:
-        #        expected_controllers.append(slice_controller.controller)
-
         # For simplicity, let's assume that a network gets deployed on all controllers.
         expected_controllers =  Controller.objects.all()
 
@@ -45,17 +37,7 @@ class NetworkPolicy(Policy):
 
         for expected_controller in expected_controllers:
             if expected_controller.id not in existing_controller_ids:
-                lazy_blocked=True
-
-                # check and see if some instance already exists
-                for networkslice in network.networkslices.all():
-                    found = False
-                    for instance in networkslice.slice.instances.all():
-                       if instance.node.site_deployment.controller.id == expected_controller.id:
-                           found = True
-                    if found:
-                       self.logger.info("MODEL_POLICY: network %s setting lazy_blocked to false because instance on controller already exists" % network)
-                       lazy_blocked=False
+                lazy_blocked=False
 
                 nd = ControllerNetwork(network=network, controller=expected_controller, lazy_blocked=lazy_blocked)
                 self.logger.info("MODEL POLICY: network %s create ControllerNetwork %s lazy_blocked %s" % (network, nd, lazy_blocked))
