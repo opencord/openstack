@@ -13,18 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-import urlparse
-
 try:
-    from keystoneauth1.identity import v2 as keystoneauth_v2
-    from keystoneauth1 import session as keystone_session
-    from keystoneclient.v2_0 import client as keystone_client
-    # from glance import client as glance_client
     import glanceclient
+    from keystoneauth1 import identity
+    from keystoneauth1 import session
+    from keystoneclient import client
     from novaclient.v2 import client as nova_client
     from neutronclient.v2_0 import client as neutron_client
-
     has_openstack = True
 except:
     has_openstack = False
@@ -92,39 +87,33 @@ class Client:
         else:
             self.cacert = Config.get("nova.ca_ssl_cert")
 
+    def get_session(self):
+        if has_openstack:
+            version = self.url.rpartition('/')[2]
+            if version == 'v2.0':
+                auth_plugin = identity.v2.Password(username=self.username,
+                                                   password=self.password,
+                                                   tenant_name=self.tenant,
+                                                   auth_url=self.url,)
+            else:
+                auth_plugin = identity.v3.Password(
+                    auth_url=self.url,
+                    username=self.username,
+                    password=self.password,
+                    project_name=self.tenant,
+                    user_domain_id='default',
+                    project_domain_id='default')
+            return session.Session(auth=auth_plugin, verify=self.cacert)
+
 
 class KeystoneClient(Client):
     def __init__(self, *args, **kwds):
         Client.__init__(self, *args, **kwds)
-        if has_openstack:
-            auth = keystoneauth_v2.Password(username=self.username,
-                                            password=self.password,
-                                            tenant_name=self.tenant,
-                                            auth_url=self.url,
-                                            )
-            sess = keystone_session.Session(auth=auth, verify=self.cacert, )
-            self.client = keystone_client.Client(session=sess)
+        self.client = client.Client(session=self.get_session())
 
     @require_enabled
     def connect(self, *args, **kwds):
         self.__init__(*args, **kwds)
-
-    @require_enabled
-    def __getattr__(self, name):
-        return getattr(self.client, name)
-
-
-class Glance(Client):
-    def __init__(self, *args, **kwds):
-        Client.__init__(self, *args, **kwds)
-        if has_openstack:
-            self.client = glanceclient.get_client(host='0.0.0.0',
-                                                  username=self.username,
-                                                  password=self.password,
-                                                  tenant=self.tenant,
-                                                  auth_url=self.url,
-                                                  cacert=self.cacert
-                                                  )
 
     @require_enabled
     def __getattr__(self, name):
@@ -137,8 +126,7 @@ class GlanceClient(Client):
         if has_openstack:
             self.client = glanceclient.Client(version,
                                               endpoint=endpoint,
-                                              token=token,
-                                              cacert=cacert
+                                              session=self.get_session()
                                               )
 
     @require_enabled
@@ -152,6 +140,7 @@ class NovaClient(Client):
         if has_openstack:
             self.client = nova_client.client.Client(
                 "2",
+                session=self.get_session(),
                 username=self.username,
                 api_key=self.password,
                 project_id=self.tenant,
@@ -172,33 +161,11 @@ class NovaClient(Client):
         return getattr(self.client, name)
 
 
-class NovaDB(Client):
-    def __init__(self, *args, **kwds):
-        Client.__init__(self, *args, **kwds)
-        if has_openstack:
-            self.ctx = get_admin_context()
-            nova_db_api.FLAGS(default_config_files=['/etc/nova/nova.conf'])
-            self.client = nova_db_api
-
-    @require_enabled
-    def connect(self, *args, **kwds):
-        self.__init__(*args, **kwds)
-
-    @require_enabled
-    def __getattr__(self, name):
-        return getattr(self.client, name)
-
-
 class NeutronClient(Client):
     def __init__(self, *args, **kwds):
         Client.__init__(self, *args, **kwds)
         if has_openstack:
-            self.client = neutron_client.Client(username=self.username,
-                                                password=self.password,
-                                                tenant_name=self.tenant,
-                                                auth_url=self.url,
-                                                ca_cert=self.cacert
-                                                )
+            self.client = neutron_client.Client(session=self.get_session())
 
     @require_enabled
     def connect(self, *args, **kwds):
@@ -218,15 +185,7 @@ class OpenStackClient:
     def __init__(self, *args, **kwds):
         # instantiate managers
         self.keystone = KeystoneClient(*args, **kwds)
-        url_parsed = urlparse.urlparse(self.keystone.url)
-        hostname = url_parsed.netloc.split(':')[0]
-        token = self.keystone.client.tokens.authenticate(username=self.keystone.username,
-                                                         password=self.keystone.password,
-                                                         tenant_name=self.keystone.tenant)
-        #        glance_endpoint = self.keystone.client.service_catalog.url_for(service_type='image', endpoint_type='publicURL')
-        #        self.glanceclient = GlanceClient('1', endpoint=glance_endpoint, token=token.id, **kwds)
         self.nova = NovaClient(*args, **kwds)
-        # self.nova_db = NovaDB(*args, **kwds)
         self.neutron = NeutronClient(*args, **kwds)
 
     @require_enabled
