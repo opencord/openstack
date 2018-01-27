@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import types
 import commands
 import hashlib
 from xosconfig import Config
@@ -27,12 +27,32 @@ except:
 
 manager_enabled = Config.get("nova.enabled")
 
+
+def _findall(self, **kwargs):
+    if 'id' in kwargs:
+        return [self.get(id)]
+    return self.list(**kwargs)
+
+
+def extend_v3_attr(keystone, base_attr, **kwargs):
+    if 'v2.0' != keystone.version:
+        base_attr.update(kwargs)
+
+
 class OpenStackDriver:
 
     def __init__(self, config = None, client=None):
 
         if client:
             self.shell = client
+            if 'v2.0' != self.shell.keystone.version:
+                self.shell.keystone.projects.findall = types.MethodType(
+                    _findall, self.shell.keystone.projects)
+                self.shell.keystone.tenants = self.shell.keystone.projects
+                self.shell.keystone.roles.findall = types.MethodType(
+                    _findall, self.shell.keystone.roles)
+                self.shell.keystone.users.findall = types.MethodType(
+                    _findall, self.shell.keystone.users)
 
         self.enabled = manager_enabled
         self.has_openstack = has_openstack
@@ -81,12 +101,12 @@ class OpenStackDriver:
             self.shell.keystone.roles.delete(role)
         return 1
 
-    def create_tenant(self, tenant_name, enabled, description):
+    def create_tenant(self, tenant_name, enabled, description, domain_id='default'):
         """Create keystone tenant. Suggested fields: name, description, enabled"""
-        tenants = self.shell.keystone.tenants.findall(name=tenant_name)
         if not tenants:
             fields = {'tenant_name': tenant_name, 'enabled': enabled,
                       'description': description}
+            extend_v3_attr(self.shell.keystone, fields, domain_id=domain_id)
             tenant = self.shell.keystone.tenants.create(**fields)
         else:
             tenant = tenants[0]
@@ -117,11 +137,13 @@ class OpenStackDriver:
             self.shell.keystone.tenants.delete(tenant)
         return 1
 
-    def create_user(self, name, email, password, enabled):
+
+    def create_user(self, name, email, password, enabled, domain_id='default'):
         users = self.shell.keystone.users.findall(email=email)
         if not users:
             fields = {'name': name, 'email': email, 'password': password,
                       'enabled': enabled}
+            extend_v3_attr(self.shell.keystone, fields, domain_id=domain_id)
             user = self.shell.keystone.users.create(**fields)
         else:
             user = users[0]
@@ -131,7 +153,10 @@ class OpenStackDriver:
         users = self.shell.keystone.users.findall(id=id)
         for user in users:
             # delete users keys
-            keys = self.shell.nova.keypairs.findall()
+            if 'v2.0' == self.shell.keystone.version:
+                keys = self.shell.nova.keypairs.findall()
+            else:
+                keys = self.shell.nova.keypairs.findall(user_id=id)
             for key in keys:
                 self.shell.nova.keypairs.delete(key)
             self.shell.keystone.users.delete(user)

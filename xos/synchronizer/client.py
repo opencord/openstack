@@ -117,6 +117,9 @@ class KeystoneClient(Client):
 
     @require_enabled
     def __getattr__(self, name):
+        if 'version' == name:
+            version = self.url.rpartition('/')[2]
+            return 'v2.0' if 'v2.0' == version else 'v3.0'
         return getattr(self.client, name)
 
 
