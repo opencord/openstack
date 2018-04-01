@@ -1,4 +1,4 @@
-
+---
 # Copyright 2017-present Open Networking Foundation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
----
 - hosts: 127.0.0.1
   connection: local
   tasks:
@@ -26,6 +24,7 @@
         username: "{{ admin_user }}"
         password: "{{ admin_password }}"
         project_name: "{{ admin_project }}"
+      interface: "admin"
       name: "{{ project }}"
 {% if delete %}
       state: absent
@@ -40,6 +39,7 @@
         username: "{{ admin_user }}"
         password: "{{ admin_password }}"
         project_name: "{{ admin_project }}"
+      interface: "admin"
       name: "{{ role }}"
 
   - name: Create users with roles in slice
@@ -49,6 +49,7 @@
         username: "{{ admin_user }}"
         password: "{{ admin_password }}"
         project_name: "{{ admin_project }}"
+      interface: "admin"
       user: "{{ username }}"
       role: "{{ role }}"
       project: "{{ project }}"

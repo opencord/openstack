@@ -1,4 +1,4 @@
-
+---
 # Copyright 2017-present Open Networking Foundation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,24 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
----
 - hosts: 127.0.0.1
   connection: local
   tasks:
+
   - os_network:
-     auth:
+      auth:
         auth_url: "{{ endpoint }}"
         username: "{{ admin_user }}"
         password: "{{ admin_password }}"
         project_name: "{{ admin_project }}"
-     name: "{{ name }}"
-     shared: true
-     {% if not delete -%}
-     state: present
-     {% else -%}
-     state: absent
-     {% endif -%}
+      interface: "admin"
+      name: "{{ name }}"
+      shared: true
+      {% if not delete -%}
+      state: present
+      {% else -%}
+      state: absent
+      {% endif -%}
 
 {% if not delete %}
   - os_subnet:
@@ -39,6 +39,7 @@
         username: "{{ admin_user }}"
         password: "{{ admin_password }}"
         project_name: "{{ admin_project }}"
+      interface: "admin"
       name: "{{ subnet_name }}"
       network_name: "{{ name }}"
       {% if not delete -%}
