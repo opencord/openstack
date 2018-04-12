@@ -36,7 +36,7 @@ class SyncControllerSlicePrivileges(OpenStackSyncStep):
 
 	template = os_template_env.get_template('sync_controller_users.yaml')
         roles = [controller_slice_privilege.slice_privilege.role.role]
-	# setup user home slice roles at controller 
+	# setup user home slice roles at controller
         if not controller_slice_privilege.slice_privilege.user.site:
             raise Exception('Sliceless user %s'%controller_slice_privilege.slice_privilege.user.email)
         else:
@@ -52,9 +52,9 @@ class SyncControllerSlicePrivileges(OpenStackSyncStep):
                'ansible_tag':'%s@%s@%s'%(controller_slice_privilege.slice_privilege.user.email.replace('@','-at-'),controller_slice_privilege.slice_privilege.slice.name,controller_slice_privilege.controller.name),
 		       'admin_tenant': controller_slice_privilege.controller.admin_tenant,
 		       'roles':roles,
-		       'tenant':controller_slice_privilege.slice_privilege.slice.name}    
+		       'tenant':controller_slice_privilege.slice_privilege.slice.name}
             return user_fields
-	
+
     def map_sync_outputs(self, controller_slice_privilege, res):
         controller_slice_privilege.role_id = res[0]['id']
         controller_slice_privilege.save()
@@ -77,7 +77,7 @@ class SyncControllerSlicePrivileges(OpenStackSyncStep):
             )
             slice = slice[0]
             driver.delete_user_role(
-                user.kuser_id, 
-                slice.tenant_id, 
+                user.kuser_id,
+                slice.tenant_id,
                 controller_slice_privilege.slice_prvilege.role.role
             )

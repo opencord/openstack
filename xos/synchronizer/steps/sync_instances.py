@@ -260,6 +260,8 @@ class SyncInstances(OpenStackSyncStep):
         instance_name = '%s-%d' % (instance.slice.name, instance.id)
         controller = instance.node.site_deployment.controller
         input = {'endpoint': controller.auth_url,
+                 'endpoint_v3': controller.auth_url_v3,
+                 'domain': controller.domain,
                  'admin_user': instance.creator.email,
                  'admin_password': instance.creator.remote_password,
                  'project_name': instance.slice.name,

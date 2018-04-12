@@ -28,7 +28,7 @@ from synchronizers.new_base.modelaccessor import *
 class SyncControllerNetworks(OpenStackSyncStep):
     requested_interval = 0
     provides=[Network]
-    observes=ControllerNetwork	
+    observes=ControllerNetwork
     playbook='sync_controller_networks.yaml'
 
     def alloc_subnet(self, uuid):
@@ -148,6 +148,8 @@ class SyncControllerNetworks(OpenStackSyncStep):
         subnet_name = '%s-%d'%(network_name,controller_network.pk)
 	cidr = controller_network.subnet
 	network_fields = {'endpoint':controller_network.controller.auth_url,
+                    'endpoint_v3': controller_network.controller.auth_url_v3,
+                    'domain': controller_network.controller.domain,
                     'admin_user':slice.creator.email, # XXX: FIXME
                     'admin_project':slice.name, # XXX: FIXME
                     'admin_password':slice.creator.remote_password,
@@ -155,7 +157,7 @@ class SyncControllerNetworks(OpenStackSyncStep):
                     'subnet_name':subnet_name,
                     'ansible_tag':'%s-%s@%s'%(network_name,slice.slicename,controller_network.controller.name),
                     'cidr':cidr,
-		    'delete':True	
+		    'delete':True
                     }
 
         return network_fields

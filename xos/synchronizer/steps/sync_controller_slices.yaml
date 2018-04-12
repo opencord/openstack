@@ -24,6 +24,10 @@
         username: "{{ admin_user }}"
         password: "{{ admin_password }}"
         project_name: "{{ admin_project }}"
+        {% if domain -%}
+        project_domain_name: "{{ domain }}"
+        user_domain_name: "{{ domain }}"
+        {%- endif %}
       interface: "admin"
       name: "{{ project }}"
 {% if delete %}
@@ -39,6 +43,10 @@
         username: "{{ admin_user }}"
         password: "{{ admin_password }}"
         project_name: "{{ admin_project }}"
+        {% if domain -%}
+        project_domain_name: "{{ domain }}"
+        user_domain_name: "{{ domain }}"
+        {%- endif %}
       interface: "admin"
       name: "{{ role }}"
 
@@ -49,6 +57,10 @@
         username: "{{ admin_user }}"
         password: "{{ admin_password }}"
         project_name: "{{ admin_project }}"
+        {% if domain -%}
+        project_domain_name: "{{ domain }}"
+        user_domain_name: "{{ domain }}"
+        {%- endif %}
       interface: "admin"
       user: "{{ username }}"
       role: "{{ role }}"

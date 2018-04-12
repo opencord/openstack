@@ -24,6 +24,10 @@
         username: "{{ admin_user }}"
         password: "{{ admin_password }}"
         project_name: "{{ project_name }}"
+        {% if domain -%}
+        project_domain_name: "{{ domain }}"
+        user_domain_name: "{{ domain }}"
+        {%- endif %}
       interface: "admin"
       {% if delete -%}
       state: absent
