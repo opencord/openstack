@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import urlparse
 import base64
 from synchronizers.openstack.openstacksyncstep import OpenStackSyncStep
 from synchronizers.new_base.syncstep import *
@@ -32,6 +33,14 @@ class SyncControllerImages(OpenStackSyncStep):
         return super(SyncControllerImages, self).fetch_pending(deleted)
 
     def map_sync_inputs(self, controller_image):
+        if controller_image.image.path.startswith("http"):
+            location = controller_image.image.path
+            a = urlparse.urlparse(location)
+            filepath = "/opt/xos/images" + a.path
+        else:
+            filepath = controller_image.image.path
+            location = None
+
         image_fields = {'endpoint':controller_image.controller.auth_url,
                         'endpoint_v3': controller_image.controller.auth_url_v3,
                         'admin_user':controller_image.controller.admin_user,
@@ -39,7 +48,8 @@ class SyncControllerImages(OpenStackSyncStep):
                         'admin_project': 'admin',
                         'domain': controller_image.controller.domain,
                         'name':controller_image.image.name,
-                        'filepath':controller_image.image.path,
+                        'filepath':filepath,
+                        'location':location,
                         'ansible_tag': '%s@%s'%(controller_image.image.name,controller_image.controller.name), # name of ansible playbook
                         }
 

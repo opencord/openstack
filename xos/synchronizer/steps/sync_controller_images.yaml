@@ -19,6 +19,18 @@
   connection: local
   tasks:
 
+{% if location and filepath %}
+  - file:
+      path: "{{ '{{' }} '{{ filepath }}' | dirname {{ '}}' }}"
+      state: directory
+      mode: 0755
+
+  - get_url:
+      url: "{{ location }}"
+      dest: "{{ filepath }}"
+      mode: 0644
+{% endif %}
+
   - os_image:
       name: "{{ name }}"
       filename: "{{ filepath }}"
