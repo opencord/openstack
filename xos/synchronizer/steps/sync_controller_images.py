@@ -53,11 +53,11 @@ class SyncControllerImages(OpenStackSyncStep):
                         'ansible_tag': '%s@%s'%(controller_image.image.name,controller_image.controller.name), # name of ansible playbook
                         }
 
-	return image_fields
+        return image_fields
 
     def map_sync_outputs(self, controller_image, res):
-        image_id = res[0]['id']
+        image_id = res[-1]['id']
         controller_image.glance_image_id = image_id
-	controller_image.backend_status = 'OK'
-	controller_image.backend_code = 1
+        controller_image.backend_status = 'OK'
+        controller_image.backend_code = 1
         controller_image.save()
