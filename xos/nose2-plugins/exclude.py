@@ -1,4 +1,4 @@
----
+
 # Copyright 2017-present Open Networking Foundation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,22 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- hosts: 127.0.0.1
-  connection: local
-  tasks:
+import logging
+import os
 
-  - name: Create XOS site (OpenStack project)
-    os_project:
-      auth:
-        auth_url: "{{ endpoint }}"
-        username: "{{ admin_user }}"
-        password: "{{ admin_password }}"
-        project_name: "{{ admin_project }}"
-        {% if domain -%}
-        project_domain_name: "{{ domain }}"
-        user_domain_name: "{{ domain }}"
-        {%- endif %}
-      interface: "admin"
-      name: "{{ project }}"
-      description: "{{ project_description }}"
-      domain: "{{ domain }}"
+from nose2.events import Plugin
+
+log = logging.getLogger('nose2.plugins.excludeignoredfiles')
+
+class ExcludeIgnoredFiles(Plugin):
+    commandLineSwitch = (None, 'exclude-ignored-files', 'Exclude that which should be excluded')
+
+    def matchPath(self, event):
+        if event.path.endswith(".py"):
+            text = open(event.path, "r").read()
+            if "test_framework: ignore" in text.lower():
+                log.info("Ignoring %s" % event.path)
+                event.handled = True
+                return False

@@ -19,6 +19,10 @@ FROM xosproject/xos-synchronizer-base:candidate
 COPY xos/synchronizer /opt/xos/synchronizers/openstack
 COPY VERSION /opt/xos/synchronizers/openstack/
 
+ENV OS_IDENTITY_API_VERSION=3
+
+ENTRYPOINT []
+
 WORKDIR "/opt/xos/synchronizers/openstack"
 
 # Label image

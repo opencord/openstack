@@ -1,4 +1,4 @@
----
+
 # Copyright 2017-present Open Networking Foundation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,23 +12,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-- hosts: 127.0.0.1
-  connection: local
-  tasks:
-
-  - name: Create XOS site (OpenStack project)
-    os_project:
-      auth:
-        auth_url: "{{ endpoint }}"
-        username: "{{ admin_user }}"
-        password: "{{ admin_password }}"
-        project_name: "{{ admin_project }}"
-        {% if domain -%}
-        project_domain_name: "{{ domain }}"
-        user_domain_name: "{{ domain }}"
-        {%- endif %}
-      interface: "admin"
-      name: "{{ project }}"
-      description: "{{ project_description }}"
-      domain: "{{ domain }}"

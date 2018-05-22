@@ -24,6 +24,11 @@ class SlicePolicy(Policy):
         return self.handle_update(slice)
 
     def handle_update(self, slice):
+        # Ignore new-style slices as we don't want to run all the old policies
+        if (slice.trust_domain != None):
+            self.logger.info("This is a new-style openstack slice, which this policy shall ignore")
+            return
+
         support_nat_net = False # Assume we're using VTN rather than nat-net
 
         # slice = Slice.get(slice_id)
@@ -109,10 +114,12 @@ class SlicePolicy(Policy):
 
     # TODO: This feels redundant with the reaper
     def handle_delete(self, slice):
-        public_nets = []
-        private_net = None
-        networks = Network.objects.filter(owner_id=slice.id)
+        # Ignore new-style slices as we don't want to run all the old policies
+        if (slice.trust_domain != None):
+            self.logger.info("This is a new-style openstack slice, which this policy shall ignore")
+            return
 
+        networks = Network.objects.filter(owner_id=slice.id)
         for n in networks:
             n.delete()
 

@@ -1,0 +1,22 @@
+option app_label = "openstack";
+option name = "openstack";
+
+message OpenStackService (Service){
+    option verbose_name = "OpenStack Service";
+
+     optional string auth_url = 1 [max_length = 200, content_type = "stripped", blank = True, help_text = "Auth url for the OpenStack controller", null = True, db_index = False];
+     optional string admin_user = 2 [max_length = 200, content_type = "stripped", blank = True, help_text = "Username of an admin user at this OpenStack", null = True, db_index = False];
+     optional string admin_password = 3 [max_length = 200, content_type = "stripped", blank = True, help_text = "Password of theadmin user at this OpenStack", null = True, db_index = False];
+     optional string admin_tenant = 4 [max_length = 200, content_type = "stripped", blank = True, help_text = "Name of the tenant the admin user belongs to", null = True, db_index = False];
+}
+
+message OpenStackServiceInstance (ComputeServiceInstance){
+     option verbose_name = "OpenStack Service Instance";
+
+     optional manytoone flavor->Flavor:openstackinstance = 1 [null = True, db_index = True, blank = True, help_text = "Flavor of this instance"];
+     optional manytoone node->Node:openstackinstances = 2 [db_index = True, null = True, blank = True, help_text = "Node on which to deploy this instance"];
+
+     optional string admin_password = 3 [max_length = 200, content_type = "stripped", blank = True, help_text = "Admin password for instance", null = True, db_index = False];
+}
+
+

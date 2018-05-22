@@ -14,17 +14,15 @@
 # limitations under the License.
 
 
-import os
-import base64
 from synchronizers.new_base.syncstep import SyncStep
 
 class OpenStackSyncStep(SyncStep):
-    """ XOS Sync step for copying data to OpenStack 
-    """ 
-    
-    def __init__(self, **args):
-        SyncStep.__init__(self, **args)
-        return
+    """ XOS Sync step for copying data to OpenStack
+    """
 
+    def __init__(self, *args, **kwargs):
+        SyncStep.__init__(self, *args, **kwargs)
+
+    # TODO(smbaker): This should be explained.
     def __call__(self, **args):
         return self.call(**args)

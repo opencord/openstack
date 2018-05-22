@@ -32,6 +32,7 @@
       name: "{{ name }}"
       email: "{{ email }}"
       password: "{{ password }}"
+      domain: "{{ domain }}"
 
   - name: Create project for "{{ project }}"
     os_project:
@@ -46,6 +47,7 @@
         {%- endif %}
       interface: "admin"
       name: "{{ project }}"
+      domain: "{{ domain }}"
 
 {% for role in roles %}
   - name: Create role "{{ role }}"
