@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 # Copyright 2017-present Open Networking Foundation
 #
@@ -13,8 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-#!/usr/bin/env python
 import os
 import argparse
 import sys
@@ -59,8 +58,11 @@ def main():
     if (wait):
         time.sleep(60) # Safety factor, seeing that we stumbled waiting for the data model to come up.
     backend = Backend()
-    backend.run()    
+    backend.run()
 
 if __name__ == '__main__':
-    
-    main() 
+
+    # Update the CA certificates
+    os.system("update-ca-certificates")
+
+    main()
