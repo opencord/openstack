@@ -71,9 +71,9 @@ Network connectivity is typically achieved by attaching `Networks` to `Slices`. 
 
 A typical workflow for establishing network connectivity is:
 
-1.  Create a `Slice`
-2.  Create a `NetworkSlice` for each `Network` that should be attached to the `Slice`.
-3.  Create one or more `OpenStackServiceInstance` owned by the `Slice`.
+1. Create a `Slice`
+2. Create a `NetworkSlice` for each `Network` that should be attached to the `Slice`.
+3. Create one or more `OpenStackServiceInstance` owned by the `Slice`.
 
 ## Creating OpenStack Objects in XOS ##
 
@@ -123,5 +123,4 @@ flavor = Flavor.objects.get(name="m1.medium")
 # Create the Server
 i=OpenStackServiceInstance(slice=s, image=img, name="demo-instance", owner=OpenStackService.objects.first(), flavor=flavor, node=node)
 i.save()
-
-
+```
