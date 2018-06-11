@@ -14,7 +14,7 @@
 # limitations under the License.
 
 
-name: openstack-synchronizer
+name: openstack
 accessor:
   username: xosadmin@opencord.org
   password: "@/opt/xos/services/openstack/credentials/xosadmin@opencord.org"
@@ -37,6 +37,7 @@ required_models:
   - Instance
   - Port
   - Role
+  - OpenStackService
 nova:
   ca_ssl_cert: "/etc/ssl/certs/ca-certificates.crt"
   enabled: True
