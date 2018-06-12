@@ -13,11 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-name: openstack
-accessor:
-  username: xosadmin@opencord.org
-  password: "@/opt/xos/services/openstack/credentials/xosadmin@opencord.org"
+name: openstack-synchronizer
 dependency_graph: "/opt/xos/synchronizers/openstack/model-deps"
 steps_dir: "/opt/xos/synchronizers/openstack/steps"
 pull_steps_dir: "/opt/xos/synchronizers/openstack/pull_steps"
@@ -41,3 +37,13 @@ required_models:
 nova:
   ca_ssl_cert: "/etc/ssl/certs/ca-certificates.crt"
   enabled: True
+logging:
+  version: 1
+  handlers:
+    console:
+      class: logging.StreamHandler
+  loggers:
+    'multistructlog':
+      handlers:
+          - console
+      level: DEBUG
