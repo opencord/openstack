@@ -17,7 +17,9 @@ tosca_definitions_version: tosca_simple_yaml_1_0
 
 description: >
   Creates a TrustDomain, Principal, Slice, Image, and then brings up an openstack
-  VM attached to the management network.
+  VM attached to the management network. The VM is pinned to a specific compute
+  node. Make sure to edit the compute_node section below and set the name of
+  the node to the hostname of your compute node.
 
 imports:
   - custom_types/trustdomain.yaml
@@ -50,6 +52,12 @@ topology_template:
       type: tosca.nodes.Network
       properties:
         name: management
+        must-exist: true
+
+    compute_node:
+      type: tosca.nodes.Node
+      properties:
+        name: <insert node hostname here>
         must-exist: true
 
     m1.small:
@@ -112,7 +120,7 @@ topology_template:
     demo_instance:
       type: tosca.nodes.OpenStackServiceInstance
       properties:
-        name: "demo-instance"
+        name: "demo-instance-pinned"
       requirements:
         - slice:
             node: demo_slice
@@ -122,6 +130,9 @@ topology_template:
             relationship: tosca.relationships.BelongsToOne
         - image:
             node: image_cirros
+            relationship: tosca.relationships.BelongsToOne
+        - node:
+            node: compute_node
             relationship: tosca.relationships.BelongsToOne
         - flavor:
             node: m1.small

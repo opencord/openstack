@@ -89,9 +89,9 @@ class SyncOpenStackServiceInstance(NewOpenStackSyncStep):
             # TODO(smbaker): No ssh keys specified
 
             if not instance.node:
-                raise Exception("No node specified for instance")
-
-            availability_zone="nova:%s" % instance.node.name
+                availability_zone = "nova"
+            else:
+                availability_zone="nova:%s" % instance.node.name
 
             log.info("Creating Instance", instance=instance, image_id=image_id, flavor_id=flavor_id,
                      availability_zone=availability_zone,
