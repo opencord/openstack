@@ -83,6 +83,7 @@ class TestPullPorts(unittest.TestCase):
             self.assertEqual(saved_port.ip, "1.2.3.4")
             self.assertEqual(saved_port.mac, "11:22:33:44:55:66")
             self.assertEqual(saved_port.port_id, 2111)
+            self.assertEqual(saved_port.service_instance, xos_instance)
 
 
 

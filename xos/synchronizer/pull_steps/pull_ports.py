@@ -89,6 +89,7 @@ class OpenStackPortPullStep(PullStep):
                         instance=None, # TODO(smbaker): link to openstack instance
                         ip=ip,
                         mac=mac,
-                        port_id=os_port.id)
+                        port_id=os_port.id,
+                        service_instance=instance)
             port.save()
             log.info("Created port", port=port, os_port=os_port)

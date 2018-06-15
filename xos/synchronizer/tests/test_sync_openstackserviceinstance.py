@@ -78,6 +78,74 @@ class TestSyncOpenStackServiceInstance(unittest.TestCase):
                                                               user_data=ANY)
             self.assertEqual(xos_instance.backend_handle, "1234")
 
+    def test_sync_record_create_noexist_noflavor(self):
+        """ Create a ServiceInstance with no flavor. It should automatically default to m1.small """
+        fakeconn = MagicMock()
+        with patch.object(self.step_class, "connect_openstack_admin") as fake_connect_openstack_admin:
+            fake_connect_openstack_admin.return_value = fakeconn
+
+            xos_instance = OpenStackServiceInstance(name="test-instance", slice=self.slice, image=self.image,
+                                                    node=self.node)
+
+            step = self.step_class()
+            fakeconn.compute.servers.return_value = []
+            fakeconn.identity.find_project.return_value = MagicMock(id=self.slice.backend_handle)
+            fakeconn.identity.find_domain.return_value = MagicMock(id=self.trust_domain.backend_handle)
+            fakeconn.compute.find_image.return_value = MagicMock(id=self.image.backend_handle)
+            fakeconn.compute.find_flavor.return_value = MagicMock(id=self.flavor.backend_handle)
+
+            os_instance = MagicMock()
+            os_instance.id = "1234"
+            fakeconn.compute.create_server.return_value = os_instance
+
+            step.sync_record(xos_instance)
+
+            fakeconn.compute.create_server.assert_called_with(admin_password=ANY,
+                                                              availability_zone="nova:test-node",
+                                                              config_drive=True,
+                                                              flavor_id=self.flavor.backend_handle,
+                                                              image_id=self.image.backend_handle,
+                                                              name=xos_instance.name,
+                                                              networks=[],
+                                                              project_domain_id=self.slice.backend_handle,
+                                                              user_data=ANY)
+            self.assertEqual(xos_instance.backend_handle, "1234")
+
+    def test_sync_record_create_noexist_nohost(self):
+        """ create a ServiceInstance with no node. It should be assigned to the "nova" availability zone
+        """
+
+        fakeconn = MagicMock()
+        with patch.object(self.step_class, "connect_openstack_admin") as fake_connect_openstack_admin:
+            fake_connect_openstack_admin.return_value = fakeconn
+
+            xos_instance = OpenStackServiceInstance(name="test-instance", slice=self.slice, image=self.image,
+                                                    flavor=self.flavor)
+
+            step = self.step_class()
+            fakeconn.compute.servers.return_value = []
+            fakeconn.identity.find_project.return_value = MagicMock(id=self.slice.backend_handle)
+            fakeconn.identity.find_domain.return_value = MagicMock(id=self.trust_domain.backend_handle)
+            fakeconn.compute.find_image.return_value = MagicMock(id=self.image.backend_handle)
+            fakeconn.compute.find_flavor.return_value = MagicMock(id=self.flavor.backend_handle)
+
+            os_instance = MagicMock()
+            os_instance.id = "1234"
+            fakeconn.compute.create_server.return_value = os_instance
+
+            step.sync_record(xos_instance)
+
+            fakeconn.compute.create_server.assert_called_with(admin_password=ANY,
+                                                              availability_zone="nova",
+                                                              config_drive=True,
+                                                              flavor_id=self.flavor.backend_handle,
+                                                              image_id=self.image.backend_handle,
+                                                              name=xos_instance.name,
+                                                              networks=[],
+                                                              project_domain_id=self.slice.backend_handle,
+                                                              user_data=ANY)
+            self.assertEqual(xos_instance.backend_handle, "1234")
+
     def test_sync_record_create_exists(self):
         fakeconn = MagicMock()
         with patch.object(self.step_class, "connect_openstack_admin") as fake_connect_openstack_admin:
