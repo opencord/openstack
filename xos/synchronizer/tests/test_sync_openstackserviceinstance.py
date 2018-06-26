@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
+import base64
 import os
 import sys
 import unittest
@@ -144,6 +144,46 @@ class TestSyncOpenStackServiceInstance(unittest.TestCase):
                                                               networks=[],
                                                               project_domain_id=self.slice.backend_handle,
                                                               user_data=ANY)
+            self.assertEqual(xos_instance.backend_handle, "1234")
+
+    def test_sync_record_create_noexist_with_keys(self):
+        fakeconn = MagicMock()
+        with patch.object(self.step_class, "connect_openstack_admin") as fake_connect_openstack_admin:
+            fake_connect_openstack_admin.return_value = fakeconn
+
+            xos_instance = OpenStackServiceInstance(name="test-instance", slice=self.slice, image=self.image,
+                                                    node=self.node, flavor=self.flavor)
+
+            admin_user = User(email="test_user@test.com", public_key="key1")
+            self.slice.creator = admin_user
+
+            owning_service = Service(name="test_service", public_key="key2")
+            self.slice.service = owning_service
+
+            step = self.step_class()
+            fakeconn.compute.servers.return_value = []
+            fakeconn.identity.find_project.return_value = MagicMock(id=self.slice.backend_handle)
+            fakeconn.identity.find_domain.return_value = MagicMock(id=self.trust_domain.backend_handle)
+            fakeconn.compute.find_image.return_value = MagicMock(id=self.image.backend_handle)
+            fakeconn.compute.find_flavor.return_value = MagicMock(id=self.flavor.backend_handle)
+
+            os_instance = MagicMock()
+            os_instance.id = "1234"
+            fakeconn.compute.create_server.return_value = os_instance
+
+            step.sync_record(xos_instance)
+
+            expected_userdata = base64.b64encode('#cloud-config\n\nssh_authorized_keys:\n  - key1\n  - key2\n')
+
+            fakeconn.compute.create_server.assert_called_with(admin_password=ANY,
+                                                              availability_zone="nova:test-node",
+                                                              config_drive=True,
+                                                              flavor_id=self.flavor.backend_handle,
+                                                              image_id=self.image.backend_handle,
+                                                              name=xos_instance.name,
+                                                              networks=[],
+                                                              project_domain_id=self.slice.backend_handle,
+                                                              user_data=expected_userdata)
             self.assertEqual(xos_instance.backend_handle, "1234")
 
     def test_sync_record_create_exists(self):

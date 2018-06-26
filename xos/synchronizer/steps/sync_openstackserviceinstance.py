@@ -38,10 +38,10 @@ class SyncOpenStackServiceInstance(NewOpenStackSyncStep):
         pubkeys=[]
 
         if instance.slice.creator and instance.slice.creator.public_key:
-            pubkeys.add(instance.slice.creator.public_key)
+            pubkeys.append(instance.slice.creator.public_key)
 
         if instance.slice.service and instance.slice.service.public_key:
-            pubkeys.add(instance.slice.service.public_key)
+            pubkeys.append(instance.slice.service.public_key)
 
         userdata = '#cloud-config\n\n'
 #        userdata += 'opencloud:\n   slicename: "%s"\n   hostname: "%s"\n   restapi_hostname: "%s"\n   restapi_port: "%s"\n' % (
