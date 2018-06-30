@@ -54,6 +54,56 @@ class SyncOpenStackServiceInstance(NewOpenStackSyncStep):
 
         return userdata
 
+    def get_network_for_first_slot(self, networks):
+        # Try to find a NIC with "public" visibility
+        for network in networks:
+            if (network.template.visibility == "public"):
+                return network
+
+        # Otherwise try to find a private network
+        for network in networks:
+            if (network.template.visibility == "private") and (network.template.translation == "none") and \
+                    ("management" not in network.template.name):
+                return network
+
+        return None
+
+    def get_network_for_second_slot(self, networks):
+        for network in networks:
+            if (network.template.visibility == "private") and (network.template.translation == "none") and \
+                    ("management" in network.template.name):
+                return network
+
+        return None
+
+    def sort_networks(self, networks):
+        """ Implement our historic idiosyncratic network selection process.
+
+            1) Try to put a public network in the first slot. If you don't find a public network, then put a private
+               non-management network in the first slot.
+
+            2) Try to put the management network in the second slot.
+
+            3) Add all remaining networks that were now selected for #1 or #2.
+        """
+
+        networks = networks[:]
+        result = []
+
+        first_network = self.get_network_for_first_slot(networks)
+        if (first_network):
+            result.append(first_network)
+            networks.remove(first_network)
+
+        second_network = self.get_network_for_second_slot(networks)
+        if (second_network):
+            result.append(second_network)
+            networks.remove(second_network)
+
+        result.extend(networks)
+
+        return result
+
     def sync_record(self, instance):
         slice = instance.slice
         if not slice.trust_domain:
@@ -82,6 +132,7 @@ class SyncOpenStackServiceInstance(NewOpenStackSyncStep):
             flavor_id = conn.compute.find_flavor(flavor_name).id
 
             xos_networks = self.get_connected_networks(instance)
+            xos_networks = self.sort_networks(xos_networks)
             networks = []
             for xos_network in xos_networks:
                 networks.append({"uuid": conn.network.find_network(xos_network.name).id})
