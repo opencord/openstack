@@ -90,12 +90,7 @@ class SyncControllerNetworks(OpenStackSyncStep):
 
         controller_network.gateway = self.alloc_gateway(cidr)
 
-        network_fields = {'endpoint':controller_network.controller.auth_url,
-                    'endpoint_v3': controller_network.controller.auth_url_v3,
-                    'admin_user':slice.creator.email,
-                    'admin_password':slice.creator.remote_password,
-                    'admin_project':slice.name,
-                    'domain': controller_network.controller.domain,
+        network_fields = {
                     'name':network_name,
                     'subnet_name':subnet_name,
                     'ansible_tag':'%s-%s@%s'%(network_name,slice.slicename,controller_network.controller.name),
@@ -106,6 +101,24 @@ class SyncControllerNetworks(OpenStackSyncStep):
                     'use_vtn':True,
                     'delete':False
                     }
+
+        if slice.trust_domain is not None:
+            # New Openstack modeling
+            # TODO(smbaker): Should use slice credentials rather than admin credentials
+            os_service = slice.trust_domain.owner.leaf_model
+            network_fields["endpoint"] = os_service.auth_url
+            network_fields["admin_user"] = os_service.admin_user
+            network_fields["admin_password"] = os_service.admin_password
+            network_fields["admin_project"] = "admin"
+            network_fields["domain"] = "Default"
+        else:
+            # Old OpenStack modeling
+            network_fields['endpoint'] = controller_network.controller.auth_url
+            network_fields['admin_user'] = slice.creator.email
+            network_fields['admin_password'] = slice.creator.remote_password
+            network_fields['admin_project'] = slice.name
+            network_fields['domain'] = controller_network.controller.domain
+
         return network_fields
 
     def map_sync_outputs(self, controller_network,res):
@@ -113,8 +126,8 @@ class SyncControllerNetworks(OpenStackSyncStep):
         subnet_id = res[1]['subnet']['id']
         controller_network.net_id = network_id
         controller_network.subnet_id = subnet_id
-	controller_network.backend_status = 'OK'
-	controller_network.backend_code = 1
+        controller_network.backend_status = 'OK'
+        controller_network.backend_code = 1
         if not controller_network.segmentation_id:
             controller_network.segmentation_id = str(self.get_segmentation_id(controller_network))
         controller_network.save()
@@ -130,7 +143,7 @@ class SyncControllerNetworks(OpenStackSyncStep):
             return
 
         if controller_network.network.owner and controller_network.network.owner.creator:
-	    return self.save_controller_network(controller_network)
+            return self.save_controller_network(controller_network)
         else:
             raise Exception('Could not save network controller %s'%controller_network)
 
@@ -139,26 +152,38 @@ class SyncControllerNetworks(OpenStackSyncStep):
         if (controller_network.network.template.shared_network_name or controller_network.network.template.shared_network_id):
             return
 
-	try:
-        	slice = controller_network.network.owner # XXX: FIXME!!
+        try:
+            slice = controller_network.network.owner # XXX: FIXME!!
         except:
-                raise Exception('Could not get slice for Network %s'%controller_network.network.name)
+            raise Exception('Could not get slice for Network %s'%controller_network.network.name)
 
-	network_name = controller_network.network.name
+        network_name = controller_network.network.name
         subnet_name = '%s-%d'%(network_name,controller_network.pk)
-	cidr = controller_network.subnet
-	network_fields = {'endpoint':controller_network.controller.auth_url,
-                    'endpoint_v3': controller_network.controller.auth_url_v3,
-                    'domain': controller_network.controller.domain,
-                    'admin_user':slice.creator.email, # XXX: FIXME
-                    'admin_project':slice.name, # XXX: FIXME
-                    'admin_password':slice.creator.remote_password,
+        cidr = controller_network.subnet
+        network_fields = {
                     'name':network_name,
                     'subnet_name':subnet_name,
                     'ansible_tag':'%s-%s@%s'%(network_name,slice.slicename,controller_network.controller.name),
                     'cidr':cidr,
-		    'delete':True
+		            'delete':True
                     }
+
+        if slice.trust_domain is not None:
+            # New Openstack modeling
+            # TODO(smbaker): Should use slice credentials rather than admin credentials
+            os_service = slice.trust_domain.owner.leaf_model
+            network_fields["endpoint"] = os_service.auth_url
+            network_fields["admin_user"] = os_service.admin_user
+            network_fields["admin_password"] = os_service.admin_password
+            network_fields["admin_project"] = "admin"
+            network_fields["domain"] = "Default"
+        else:
+            # Old OpenStack modeling
+            network_fields['endpoint'] = controller_network.controller.auth_url
+            network_fields['admin_user'] = slice.creator.email
+            network_fields['admin_password'] = slice.creator.remote_password
+            network_fields['admin_project'] = slice.name
+            network_fields['domain'] = controller_network.controller.domain
 
         return network_fields
 
