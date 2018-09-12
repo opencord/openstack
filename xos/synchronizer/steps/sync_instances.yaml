@@ -17,6 +17,20 @@
   connection: local
   tasks:
 
+  {% if delete -%}
+  - os_server_actions:
+      server: "{{ name }}"
+      auth:
+        auth_url: "{{ endpoint }}"
+        username: "{{ admin_user }}"
+        password: "{{ admin_password }}"
+        project_name: "{{ project_name }}"
+        {% if domain -%}
+        project_domain_name: "{{ domain }}"
+        user_domain_name: "{{ domain }}"
+        {%- endif %}
+      action: stop
+  {%- endif %}
   - os_server:
       name: "{{ name }}"
       auth:
