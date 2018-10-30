@@ -13,8 +13,8 @@ message OpenStackService (Service){
 message OpenStackServiceInstance (ComputeServiceInstance){
      option verbose_name = "OpenStack Service Instance";
 
-     optional manytoone flavor->Flavor:openstackinstance = 1 [null = True, db_index = True, blank = True, help_text = "Flavor of this instance"];
-     optional manytoone node->Node:openstackinstances = 2 [db_index = True, null = True, blank = True, help_text = "Node on which to deploy this instance"];
+     optional manytoone flavor->Flavor:openstackinstance = 1:1003 [null = True, db_index = True, blank = True, help_text = "Flavor of this instance"];
+     optional manytoone node->Node:openstackinstances = 2:1005 [db_index = True, null = True, blank = True, help_text = "Node on which to deploy this instance"];
 
      optional string admin_password = 3 [max_length = 200, content_type = "stripped", blank = True, help_text = "Admin password for instance", null = True, db_index = False];
 }
