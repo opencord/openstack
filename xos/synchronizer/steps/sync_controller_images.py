@@ -26,12 +26,6 @@ class SyncControllerImages(OpenStackSyncStep):
     requested_interval=0
     playbook='sync_controller_images.yaml'
 
-    def fetch_pending(self, deleted):
-        if (deleted):
-            return []
-
-        return super(SyncControllerImages, self).fetch_pending(deleted)
-
     def map_sync_inputs(self, controller_image):
         if controller_image.image.path.startswith("http"):
             location = controller_image.image.path
@@ -61,3 +55,26 @@ class SyncControllerImages(OpenStackSyncStep):
         controller_image.backend_status = 'OK'
         controller_image.backend_code = 1
         controller_image.save()
+
+    def  map_delete_inputs (self, controller_image):
+        if controller_image.image.path.startswith("http"):
+            location = controller_image.image.path
+            a = urlparse.urlparse(location)
+            filepath = "/opt/xos/images" + a.path
+        else:
+            filepath = controller_image.image.path
+            location = None
+
+        image_fields = {'endpoint':controller_image.controller.auth_url,
+                         'endpoint_v3': controller_image.controller.auth_url_v3,
+                          'domain': controller_image.controller.domain,
+                          'admin_user': controller_image.controller.admin_user,
+                          'admin_password': controller_image.controller.admin_password,
+                          'admin_project': 'admin',
+                          'domain': controller_image.controller.domain,
+                          'name':controller_image.image.name,
+                          'filepath':filepath,
+                          'location':location,
+                          'ansible_tag':'%s@%s'%(controller_image.image.name,controller_image.controller.name),
+                          'delete': True}
+        return image_fields
