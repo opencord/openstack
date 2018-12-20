@@ -1,18 +1,8 @@
 # OpenStack Service #
 
-## Purpose ##
-
 The OpenStack Service is responsible for instantiating OpenStack Networks and Compute resources. Compute resources are referred to as "Servers" in the OpenStack API. This documentation may refer to "Servers" and "VMs" interchangeably.
 
-## Transition from old to new OpenStack modeling ##
-
-The OpenStack service is currently undergoing a transition from older modeling to newer modeling. The new models are currently in alpha status, and may have limited features and functionality. As work continues, it will soon be encouraged for new services to use the new models, which are described in this document.
-
-The new models are primarily comprised of `TrustDomain`, `Principal`, `OpenStackService`, and `OpenStackServiceInstance`.
-
-Some older models such as `Controller` and `Instance` may be removed at a future date.
-
-Several models such as `Network`, `Image`, and `Flavor` are useful with both the older OpenStack modeling and the newer OpenStack modeling.
+> Note: The OpenStack service has not been tested with CORD 6.1.
 
 ## Models ##
 
@@ -75,7 +65,7 @@ A typical workflow for establishing network connectivity is:
 2. Create a `NetworkSlice` for each `Network` that should be attached to the `Slice`.
 3. Create one or more `OpenStackServiceInstance` owned by the `Slice`.
 
-## Creating OpenStack Objects in XOS ##
+## Example Python Workflow - Creating OpenStack Objects in XOS ##
 
 An XOS Service can leverage the OpenStack Service to creates OpenStack resources on behalf of the XOS Service. To create an OpenStack Server, it's suggested you create the following XOS Objects:
 
@@ -124,3 +114,42 @@ flavor = Flavor.objects.get(name="m1.medium")
 i=OpenStackServiceInstance(slice=s, image=img, name="demo-instance", owner=OpenStackService.objects.first(), flavor=flavor, node=node)
 i.save()
 ```
+
+## Integration with other Services ##
+
+The OpenStack service is an infrastructure service, providing support for several models (`Slice`, `Instance`, `Network`, ...) that are declared in the XOS core.
+
+`ExampleService` exists as an example of how to integrate with the OpenStack Service.
+
+### Transition from old to new OpenStack modeling ###
+
+The OpenStack service is currently undergoing a transition from older modeling to newer modeling. The new models are currently in alpha status, and may have limited features and functionality. As work continues, it will soon be encouraged for new services to use the new models, which are described in this document.
+
+The new models are primarily comprised of `TrustDomain`, `Principal`, `OpenStackService`, and `OpenStackServiceInstance`.
+
+Some older models such as `Controller` and `Instance` may be removed at a future date.
+
+Several models such as `Network`, `Image`, and `Flavor` are useful with both the older OpenStack modeling and the newer OpenStack modeling.
+
+## Synchronizer Workflows ##
+
+Model policies are implemented that create a variety of controller-based models when their primary model is created. For example, creating an `Image` will automatically create a corresponding `ControllerImage` object. It is then the `ControllerImage` that is synchronized instead of the `Image`. This particular implementation decision dates back to a requirement that resources be able to span multiple OpenStack deployments.
+
+The following models are synchronized by using Ansible playbooks:
+
+- `ControllerImages`
+- `ControllerNetworks`
+- `ControllerSitePrivileges`
+- `ControllerSite`
+- `ControllerSlicePrivileges`
+- `ControllerSlices`
+- `ControllerUsers`
+- `Instance`
+
+The following models are synchronized by using the OpenStack API directly:
+
+- `OpenStackServiceInstance`
+- `Port`. The Port syncstep implements both push and pull behavior, learning IP addresses from Neutron.
+- `Role`
+- `Slice`
+- `TrustDomain`
