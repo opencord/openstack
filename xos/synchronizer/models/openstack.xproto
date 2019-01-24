@@ -3,20 +3,60 @@ option name = "openstack";
 
 message OpenStackService (Service){
     option verbose_name = "OpenStack Service";
+    option description = "Service that manages OpenStack compute resources";
 
-     optional string auth_url = 1 [max_length = 200, content_type = "stripped", blank = True, help_text = "Auth url for the OpenStack controller", null = True, db_index = False];
-     optional string admin_user = 2 [max_length = 200, content_type = "stripped", blank = True, help_text = "Username of an admin user at this OpenStack", null = True, db_index = False];
-     optional string admin_password = 3 [max_length = 200, content_type = "stripped", blank = True, help_text = "Password of theadmin user at this OpenStack", null = True, db_index = False];
-     optional string admin_tenant = 4 [max_length = 200, content_type = "stripped", blank = True, help_text = "Name of the tenant the admin user belongs to", null = True, db_index = False];
+    optional string auth_url = 1 [
+        help_text = "Auth url for the OpenStack controller",
+        blank = True,
+        content_type = "stripped",
+        db_index = False,
+        max_length = 200,
+        null = True];
+    optional string admin_user = 2 [
+        help_text = "Username of an admin user at this OpenStack",
+        max_length = 200,
+        blank = True,
+        content_type = "stripped",
+        db_index = False,
+        null = True];
+    optional string admin_password = 3 [
+        help_text = "Password of theadmin user at this OpenStack",
+        blank = True,
+        content_type = "stripped",
+        db_index = False,
+        max_length = 200,
+        null = True];
+    optional string admin_tenant = 4 [
+        help_text = "Name of the tenant the admin user belongs to",
+        blank = True,
+        content_type = "stripped",
+        db_index = False,
+        max_length = 200,
+        null = True];
 }
 
 message OpenStackServiceInstance (ComputeServiceInstance){
      option verbose_name = "OpenStack Service Instance";
+     option description = "A ComputeServiceInstance in OpenStack, usually in the form of a virtual machine";
 
-     optional manytoone flavor->Flavor:openstackinstance = 1:1003 [null = True, db_index = True, blank = True, help_text = "Flavor of this instance"];
-     optional manytoone node->Node:openstackinstances = 2:1005 [db_index = True, null = True, blank = True, help_text = "Node on which to deploy this instance"];
+     optional manytoone flavor->Flavor:openstackinstance = 1:1003 [
+         help_text = "Flavor of this instance",
+         blank = True,
+         db_index = True,
+         null = True];
+     optional manytoone node->Node:openstackinstances = 2:1005 [
+         help_text = "Node on which to deploy this instance",
+         blank = True,
+         db_index = True,
+         null = True];
 
-     optional string admin_password = 3 [max_length = 200, content_type = "stripped", blank = True, help_text = "Admin password for instance", null = True, db_index = False];
+     optional string admin_password = 3 [
+         help_text = "Admin password for instance",
+         blank = True,
+         content_type = "stripped",
+         db_index = False,
+         max_length = 200,
+         null = True];
 }
 
 
