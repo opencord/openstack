@@ -14,7 +14,7 @@
 # limitations under the License.
 
 
-from synchronizers.new_base.modelaccessor import TrustDomain, Principal
+from xossynchronizer.modelaccessor import TrustDomain, Principal
 from newopenstacksyncstep import NewOpenStackSyncStep
 
 from xosconfig import Config

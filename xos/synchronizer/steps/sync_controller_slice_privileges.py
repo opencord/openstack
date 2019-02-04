@@ -17,11 +17,13 @@
 import os
 import base64
 import json
-from synchronizers.openstack.openstacksyncstep import OpenStackSyncStep
-from synchronizers.new_base.syncstep import *
-from synchronizers.new_base.ansible_helper import *
-from xos.logger import observer_logger as logger
-from synchronizers.new_base.modelaccessor import *
+from openstacksyncstep import OpenStackSyncStep
+from xossynchronizer.modelaccessor import *
+from xosconfig import Config
+from multistructlog import create_logger
+
+log = create_logger(Config().get('logging'))
+
 
 class SyncControllerSlicePrivileges(OpenStackSyncStep):
     provides=[SlicePrivilege]
@@ -31,7 +33,7 @@ class SyncControllerSlicePrivileges(OpenStackSyncStep):
 
     def map_sync_inputs(self, controller_slice_privilege):
         if not controller_slice_privilege.controller.admin_user:
-            logger.info("controller %r has no admin_user, skipping" % controller_slice_privilege.controller)
+            log.info("controller %r has no admin_user, skipping" % controller_slice_privilege.controller)
             return
 
 	template = os_template_env.get_template('sync_controller_users.yaml')

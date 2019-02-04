@@ -32,6 +32,8 @@ class TestSyncSlice(unittest.TestCase):
 
         sys.path.append(os.path.join(os.path.abspath(os.path.dirname(os.path.realpath(__file__))), "../steps"))
 
+        self.model_accessor = self.unittest_setup["model_accessor"]
+
         from sync_slice import SyncSlice
         self.step_class = SyncSlice
 
@@ -51,7 +53,7 @@ class TestSyncSlice(unittest.TestCase):
 
             xos_slice = Slice(name="test-slice", trust_domain=self.trust_domain, site=self.site)
 
-            step = self.step_class()
+            step = self.step_class(model_accessor=self.model_accessor)
             fakeconn.identity.find_project.return_value = None
             fakeconn.identity.find_domain.return_value = MagicMock(id=trust_domain_id)
 
@@ -74,7 +76,7 @@ class TestSyncSlice(unittest.TestCase):
             os_slice = MagicMock()
             os_slice.id = "1234"
 
-            step = self.step_class()
+            step = self.step_class(model_accessor=self.model_accessor)
             fakeconn.identity.find_project.return_value = os_slice
             fakeconn.identity.create_user.return_value = None
 
@@ -90,7 +92,7 @@ class TestSyncSlice(unittest.TestCase):
 
             xos_slice = Slice(name="test-slice", trust_domain=self.trust_domain, site=self.site)
 
-            step = self.step_class()
+            step = self.step_class(model_accessor=self.model_accessor)
             os_slice = MagicMock()
             os_slice.id = "1234"
             fakeconn.identity.find_project.return_value = os_slice

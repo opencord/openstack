@@ -17,7 +17,7 @@ import base64
 import random
 import string
 
-from synchronizers.new_base.modelaccessor import OpenStackServiceInstance, Node, NetworkSlice, Flavor
+from xossynchronizer.modelaccessor import OpenStackServiceInstance, Node, NetworkSlice, Flavor
 from newopenstacksyncstep import NewOpenStackSyncStep
 
 from xosconfig import Config

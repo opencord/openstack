@@ -16,11 +16,13 @@
 
 import os
 import base64
-from synchronizers.openstack.openstacksyncstep import OpenStackSyncStep
-from synchronizers.new_base.syncstep import *
-from synchronizers.new_base.ansible_helper import *
-from xos.logger import observer_logger as logger
-from synchronizers.new_base.modelaccessor import *
+from openstacksyncstep import OpenStackSyncStep
+from xossynchronizer.modelaccessor import *
+from xosconfig import Config
+from multistructlog import create_logger
+
+log = create_logger(Config().get('logging'))
+
 
 class SyncControllerSlices(OpenStackSyncStep):
     provides=[Slice]
@@ -29,10 +31,10 @@ class SyncControllerSlices(OpenStackSyncStep):
     playbook='sync_controller_slices.yaml'
 
     def map_sync_inputs(self, controller_slice):
-        logger.info("sync'ing slice controller %s" % controller_slice)
+        log.info("sync'ing slice controller %s" % controller_slice)
 
         if not controller_slice.controller.admin_user:
-            logger.info("controller %r has no admin_user, skipping" % controller_slice.controller)
+            log.info("controller %r has no admin_user, skipping" % controller_slice.controller)
             return
 
         controller_users = ControllerUser.objects.filter(user_id=controller_slice.slice.creator.id,
@@ -67,7 +69,7 @@ class SyncControllerSlices(OpenStackSyncStep):
                 driver = self.driver.admin_driver(controller=controller_slice.controller)
                 driver.shell.nova.quotas.update(tenant_id=tenant_id, instances=int(controller_slice.slice.max_instances))
             except:
-                logger.log_exc('Could not update quota for %s'%controller_slice.slice.name)
+                log.exception('Could not update quota for %s'%controller_slice.slice.name)
                 raise Exception('Could not update quota for %s'%controller_slice.slice.name)
 
             controller_slice.tenant_id = tenant_id

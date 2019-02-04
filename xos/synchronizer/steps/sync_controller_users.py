@@ -16,11 +16,12 @@
 
 import os
 import base64
-from synchronizers.openstack.openstacksyncstep import OpenStackSyncStep
-from synchronizers.new_base.syncstep import *
-from synchronizers.new_base.ansible_helper import *
-from xos.logger import observer_logger as logger
-from synchronizers.new_base.modelaccessor import *
+from openstacksyncstep import OpenStackSyncStep
+from xossynchronizer.modelaccessor import *
+from xosconfig import Config
+from multistructlog import create_logger
+
+log = create_logger(Config().get('logging'))
 
 class SyncControllerUsers(OpenStackSyncStep):
     provides=[User]
@@ -30,7 +31,7 @@ class SyncControllerUsers(OpenStackSyncStep):
 
     def map_sync_inputs(self, controller_user):
         if not controller_user.controller.admin_user:
-            logger.info("controller %r has no admin_user, skipping" % controller_user.controller)
+            log.info("controller %r has no admin_user, skipping" % controller_user.controller)
             return
 
         # All users will have at least the 'user' role at their home site/tenant.

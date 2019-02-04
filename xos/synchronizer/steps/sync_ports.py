@@ -13,12 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from openstacksyncstep import OpenStackSyncStep
+from xossynchronizer.modelaccessor import *
+from xosconfig import Config
+from multistructlog import create_logger
 
-import os
-import base64
-from synchronizers.openstack.openstacksyncstep import OpenStackSyncStep
-from xos.logger import observer_logger as logger
-from synchronizers.new_base.modelaccessor import *
+log = create_logger(Config().get('logging'))
 
 class SyncPorts(OpenStackSyncStep):
     requested_interval = 0 # 3600
@@ -57,7 +57,7 @@ class SyncPorts(OpenStackSyncStep):
         return driver
 
     def sync_ports(self):
-        logger.info("sync'ing Ports [delete=False]")
+        log.info("sync'ing Ports [delete=False]")
 
         ports = Port.objects.all()
         ports_by_id = {}
@@ -72,10 +72,6 @@ class SyncPorts(OpenStackSyncStep):
             for nd in network.controllernetworks.all():
                 networks_by_id[nd.net_id] = network
 
-        #logger.info("networks_by_id = ")
-        #for (network_id, network) in networks_by_id.items():
-        #    logger.info("   %s: %s" % (network_id, network.name))
-
         instances = Instance.objects.all()
         instances_by_instance_uuid = {}
         for instance in instances:
@@ -87,13 +83,13 @@ class SyncPorts(OpenStackSyncStep):
         templates_by_id = {}
         for controller in Controller.objects.all():
             if not controller.admin_tenant:
-                logger.info("controller %s has no admin_tenant" % controller)
+                log.info("controller %s has no admin_tenant" % controller)
                 continue
             try:
                 driver = self.driver.admin_driver(controller = controller)
                 ports = driver.shell.neutron.list_ports()["ports"]
             except:
-                logger.log_exc("failed to get ports from controller %s" % controller)
+                log.exception("failed to get ports from controller %s" % controller)
                 continue
 
             for port in ports:
@@ -113,7 +109,6 @@ class SyncPorts(OpenStackSyncStep):
                         templates_by_id[network["id"]] = template
 
         for port in ports_by_id.values():
-            #logger.info("port %s" % str(port))
             if port["id"] in ports_by_neutron_port:
                 # we already have it
                 #logger.info("already accounted for port %s" % port["id"])
@@ -126,7 +121,7 @@ class SyncPorts(OpenStackSyncStep):
 
             instance = instances_by_instance_uuid.get(port['device_id'], None)
             if not instance:
-                logger.info("no instance for port %s device_id %s" % (port["id"], port['device_id']))
+                log.info("no instance for port %s device_id %s" % (port["id"], port['device_id']))
                 continue
 
             network = networks_by_id.get(port['network_id'], None)
@@ -140,7 +135,7 @@ class SyncPorts(OpenStackSyncStep):
                          if candidate_network.template == template:
                              network=candidate_network
             if not network:
-                logger.info("no network for port %s network %s" % (port["id"], port["network_id"]))
+                log.info("no network for port %s network %s" % (port["id"], port["network_id"]))
 
                 # we know it's associated with a instance, but we don't know
                 # which network it is part of.
@@ -155,20 +150,20 @@ class SyncPorts(OpenStackSyncStep):
                 network = None
                 for candidate_network in networks:
                     if (candidate_network.owner == instance.slice):
-                        logger.info("found network %s" % candidate_network)
+                        log.info("found network %s" % candidate_network)
                         network = candidate_network
 
                 if not network:
-                    logger.info("failed to find the correct network for a shared template for port %s network %s" % (port["id"], port["network_id"]))
+                    log.info("failed to find the correct network for a shared template for port %s network %s" % (port["id"], port["network_id"]))
                     continue
 
             if not port["fixed_ips"]:
-                logger.info("port %s has no fixed_ips" % port["id"])
+                log.info("port %s has no fixed_ips" % port["id"])
                 continue
 
             ip=port["fixed_ips"][0]["ip_address"]
             mac=port["mac_address"]
-            logger.info("creating Port (%s, %s, %s, %s)" % (str(network), str(instance), ip, str(port["id"])))
+            log.info("creating Port (%s, %s, %s, %s)" % (str(network), str(instance), ip, str(port["id"])))
 
             ns = Port(network=network,
                                instance=instance,
@@ -179,7 +174,7 @@ class SyncPorts(OpenStackSyncStep):
             try:
                 ns.save()
             except:
-                logger.log_exc("failed to save port %s" % str(ns))
+                log.exception("failed to save port %s" % str(ns))
                 continue
 
         # For ports that were created by the user, find that ones
@@ -188,23 +183,23 @@ class SyncPorts(OpenStackSyncStep):
         ports = Port.objects.all()
         ports = [x for x in ports if ((not x.port_id) and (x.instance_id))]
         for port in ports:
-            logger.info("XXX working on port %s" % port)
+            log.info("XXX working on port %s" % port)
             controller = port.instance.node.site_deployment.controller
             slice = port.instance.slice
 
             if controller:
                 cn=[x for x in port.network.controllernetworks.all() if x.controller_id==controller.id]
                 if not cn:
-                    logger.log_exc("no controllernetwork for %s" % port)
+                    log.exception("no controllernetwork for %s" % port)
                     continue
                 cn=cn[0]
                 if cn.lazy_blocked:
                     cn.lazy_blocked=False
                     cn.save()
-                    logger.info("deferring port %s because controllerNetwork was lazy-blocked" % port)
+                    log.info("deferring port %s because controllerNetwork was lazy-blocked" % port)
                     continue
                 if not cn.net_id:
-                    logger.info("deferring port %s because controllerNetwork does not have a port-id yet" % port)
+                    log.info("deferring port %s because controllerNetwork does not have a port-id yet" % port)
                     continue
                 try:
                     driver = self.get_driver(port)
@@ -223,28 +218,28 @@ class SyncPorts(OpenStackSyncStep):
                         port.ip = neutron_port["fixed_ips"][0]["ip_address"]
                     port.mac = neutron_port["mac_address"]
                     port.xos_created = True
-                    logger.info("created neutron port %s for %s" % (port.port_id, port))
+                    log.info("created neutron port %s for %s" % (port.port_id, port))
                 except:
-                    logger.log_exc("failed to create neutron port for %s" % port)
+                    log.exception("failed to create neutron port for %s" % port)
                     continue
                 port.save()
 
     def delete_ports(self):
-        logger.info("sync'ing Ports [delete=True]")
+        log.info("sync'ing Ports [delete=True]")
         ports = self.fetch_pending(deletion=True)
         for port in ports:
             self.delete_record(port)
 
     def delete_record(self, port):
         if port.xos_created and port.port_id:
-            logger.info("calling openstack to destroy port %s" % port.port_id)
+            log.info("calling openstack to destroy port %s" % port.port_id)
             try:
                 driver = self.get_driver(port)
                 driver.shell.neutron.delete_port(port.port_id)
             except:
-                logger.log_exc("failed to delete port %s from neutron" % port.port_id)
+                log.exception("failed to delete port %s from neutron" % port.port_id)
                 return
 
-        logger.info("Purging port %s" % port)
+        log.info("Purging port %s" % port)
         port.delete(purge=True)
 

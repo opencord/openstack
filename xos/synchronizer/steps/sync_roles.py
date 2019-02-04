@@ -13,12 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from openstacksyncstep import OpenStackSyncStep
+from xossynchronizer.modelaccessor import *
+from xosconfig import Config
+from multistructlog import create_logger
 
-import os
-import base64
-from synchronizers.openstack.openstacksyncstep import OpenStackSyncStep
-from xos.logger import observer_logger as logger
-from synchronizers.new_base.modelaccessor import *
+log = create_logger(Config().get('logging'))
 
 class SyncRoles(OpenStackSyncStep):
     provides=[Role]
@@ -28,7 +28,7 @@ class SyncRoles(OpenStackSyncStep):
     def sync_record(self, role):
         if not role.enacted:
             controllers = Controller.objects.all()
-       	    for controller in controllers:
+            for controller in controllers:
                 driver = self.driver.admin_driver(controller=controller)
                 driver.create_role(role.role)
             role.save()

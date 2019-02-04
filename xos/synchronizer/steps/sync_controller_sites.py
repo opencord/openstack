@@ -16,11 +16,14 @@
 
 import os
 import base64
-from synchronizers.openstack.openstacksyncstep import OpenStackSyncStep
-from synchronizers.new_base.syncstep import *
-from synchronizers.new_base.ansible_helper import *
 import json
-from synchronizers.new_base.modelaccessor import *
+from openstacksyncstep import OpenStackSyncStep
+from xossynchronizer.modelaccessor import *
+from xosconfig import Config
+from multistructlog import create_logger
+
+log = create_logger(Config().get('logging'))
+
 
 class SyncControllerSites(OpenStackSyncStep):
     requested_interval=0

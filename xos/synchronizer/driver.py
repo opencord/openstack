@@ -17,10 +17,10 @@ import types
 import commands
 import hashlib
 from xosconfig import Config
-from synchronizers.new_base.modelaccessor import *
+from xossynchronizer.modelaccessor import *
 
 try:
-    from synchronizers.openstack.client import OpenStackClient
+    from client import OpenStackClient
     has_openstack = True
 except:
     has_openstack = False

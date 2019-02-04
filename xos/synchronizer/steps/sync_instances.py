@@ -14,14 +14,13 @@
 # limitations under the License.
 
 
-import os
-import base64
 import socket
-from synchronizers.openstack.openstacksyncstep import OpenStackSyncStep
-from synchronizers.new_base.ansible_helper import *
-from synchronizers.new_base.syncstep import *
-from xos.logger import observer_logger as logger
-from synchronizers.new_base.modelaccessor import *
+from openstacksyncstep import OpenStackSyncStep
+from xossynchronizer.modelaccessor import *
+from xosconfig import Config
+from multistructlog import create_logger
+
+log = create_logger(Config().get('logging'))
 
 RESTAPI_HOSTNAME = socket.gethostname()
 RESTAPI_PORT = "8000"
@@ -193,7 +192,7 @@ class SyncInstances(OpenStackSyncStep):
                              x.controller_id == instance.node.site_deployment.controller.id]
         if controller_images:
             image_name = controller_images[0].image.name
-            logger.info("using image from ControllerImage object: " + str(image_name))
+            log.info("using image from ControllerImage object: " + str(image_name))
 
         if image_name is None:
             controller_driver = self.driver.admin_driver(controller=instance.node.site_deployment.controller)
@@ -201,7 +200,7 @@ class SyncInstances(OpenStackSyncStep):
             for image in images:
                 if image.name == instance.image.name or not image_name:
                     image_name = image.name
-                    logger.info("using image from glance: " + str(image_name))
+                    log.info("using image from glance: " + str(image_name))
 
         host_filter = instance.node.name.strip()
 

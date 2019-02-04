@@ -14,9 +14,9 @@
 # limitations under the License.
 
 
-from synchronizers.new_base.modelaccessor import *
 from collections import defaultdict
-from synchronizers.new_base.policy import Policy
+from xossynchronizer.modelaccessor import *
+from xossynchronizer.model_policies.policy import Policy
 
 class NetworkPolicy(Policy):
     model_name = "Network"

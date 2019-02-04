@@ -20,17 +20,18 @@ import socket
 import sys
 import base64
 import time
-from synchronizers.new_base.SyncInstanceUsingAnsible import SyncInstanceUsingAnsible
-from synchronizers.new_base.syncstep import DeferredException
-from synchronizers.new_base.ansible_helper import run_template_ssh
-from xos.logger import Logger, logging
-from synchronizers.new_base.modelaccessor import *
+from xossynchronizer.steps.SyncInstanceUsingAnsible import SyncInstanceUsingAnsible
+from xossynchronizer.steps.syncstep import DeferredException
+from xossynchronizer.ansible_helper import run_template_ssh
+from xossynchronizer.modelaccessor import *
+from xosconfig import Config
+from multistructlog import create_logger
+
+log = create_logger(Config().get('logging'))
 
 # hpclibrary will be in steps/..
 parentdir = os.path.join(os.path.dirname(__file__),"..")
 sys.path.insert(0,parentdir)
-
-logger = Logger(level=logging.INFO)
 
 class SyncContainer(SyncInstanceUsingAnsible):
     provides=[Instance]
@@ -132,7 +133,7 @@ class SyncContainer(SyncInstanceUsingAnsible):
         return fields
 
     def sync_record(self, o):
-        logger.info("sync'ing object %s" % str(o),extra=o.tologdict())
+        log.info("sync'ing object %s" % str(o),extra=o.tologdict())
 
         fields = self.get_ansible_fields(o)
 
@@ -152,7 +153,7 @@ class SyncContainer(SyncInstanceUsingAnsible):
         o.save()
 
     def delete_record(self, o):
-        logger.info("delete'ing object %s" % str(o),extra=o.tologdict())
+        log.info("delete'ing object %s" % str(o),extra=o.tologdict())
 
         fields = self.get_ansible_fields(o)
 
@@ -171,6 +172,6 @@ class SyncContainer(SyncInstanceUsingAnsible):
             template_name = self.template_name
         tStart = time.time()
         run_template_ssh(template_name, fields, path="container", object=o)
-        logger.info("playbook execution time %d" % int(time.time()-tStart),extra=o.tologdict())
+        log.info("playbook execution time %d" % int(time.time()-tStart),extra=o.tologdict())
 
 

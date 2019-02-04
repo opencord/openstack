@@ -14,14 +14,14 @@
 # limitations under the License.
 
 
-from synchronizers.new_base.syncstep import SyncStep
+from xossynchronizer.steps.ansiblesyncstep import AnsibleSyncStep
 
-class OpenStackSyncStep(SyncStep):
+class OpenStackSyncStep(AnsibleSyncStep):
     """ XOS Sync step for copying data to OpenStack
     """
 
     def __init__(self, *args, **kwargs):
-        SyncStep.__init__(self, *args, **kwargs)
+        AnsibleSyncStep.__init__(self, *args, **kwargs)
 
     # TODO(smbaker): This should be explained.
     def __call__(self, **args):

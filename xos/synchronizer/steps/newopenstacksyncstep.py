@@ -15,7 +15,7 @@
 
 
 from distutils.version import LooseVersion
-from synchronizers.new_base.syncstep import SyncStep
+from xossynchronizer.steps.syncstep import SyncStep
 
 class NewOpenStackSyncStep(SyncStep):
     """ XOS Sync step for copying data to OpenStack

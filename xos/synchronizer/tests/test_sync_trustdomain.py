@@ -32,6 +32,8 @@ class TestSyncTrustDomain(unittest.TestCase):
 
         sys.path.append(os.path.join(os.path.abspath(os.path.dirname(os.path.realpath(__file__))), "../steps"))
 
+        self.model_accessor = self.unittest_setup["model_accessor"]
+
         from sync_trustdomain import SyncTrustDomain
         self.step_class = SyncTrustDomain
 
@@ -47,7 +49,7 @@ class TestSyncTrustDomain(unittest.TestCase):
 
             xos_trust_domain = TrustDomain(name="test-trust", owner=self.service)
 
-            step = self.step_class()
+            step = self.step_class(model_accessor=self.model_accessor)
             fakeconn.identity.find_domain.return_value = None
 
             os_domain = MagicMock()
@@ -66,7 +68,7 @@ class TestSyncTrustDomain(unittest.TestCase):
 
             xos_trust_domain = TrustDomain(name="test-trust", owner=self.service)
 
-            step = self.step_class()
+            step = self.step_class(model_accessor=self.model_accessor)
             os_domain = MagicMock()
             os_domain.id = "1234"
             fakeconn.identity.find_domain.return_value = os_domain
@@ -85,7 +87,7 @@ class TestSyncTrustDomain(unittest.TestCase):
 
             xos_trust_domain = TrustDomain(name="test-trust", owner=self.service)
 
-            step = self.step_class()
+            step = self.step_class(model_accessor=self.model_accessor)
             os_domain = MagicMock()
             os_domain.id = "1234"
             os_domain.enabled = True

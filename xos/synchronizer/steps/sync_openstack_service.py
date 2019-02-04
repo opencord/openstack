@@ -14,7 +14,7 @@
 # limitations under the License.
 
 
-from synchronizers.new_base.modelaccessor import OpenStackService
+from xossynchronizer.modelaccessor import OpenStackService
 from newopenstacksyncstep import NewOpenStackSyncStep
 
 class SyncOpenStackService(NewOpenStackSyncStep):

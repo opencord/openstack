@@ -32,6 +32,8 @@ class TestSyncOpenStackServiceInstance(unittest.TestCase):
 
         sys.path.append(os.path.join(os.path.abspath(os.path.dirname(os.path.realpath(__file__))), "../steps"))
 
+        self.model_accessor = self.unittest_setup["model_accessor"]
+
         from sync_openstackserviceinstance import SyncOpenStackServiceInstance
         self.step_class = SyncOpenStackServiceInstance
 
@@ -54,7 +56,7 @@ class TestSyncOpenStackServiceInstance(unittest.TestCase):
             xos_instance = OpenStackServiceInstance(name="test-instance", slice=self.slice, image=self.image,
                                                     node=self.node, flavor=self.flavor)
 
-            step = self.step_class()
+            step = self.step_class(model_accessor=self.model_accessor)
             fakeconn.compute.servers.return_value = []
             fakeconn.identity.find_project.return_value = MagicMock(id=self.slice.backend_handle)
             fakeconn.identity.find_domain.return_value = MagicMock(id=self.trust_domain.backend_handle)
@@ -87,7 +89,7 @@ class TestSyncOpenStackServiceInstance(unittest.TestCase):
             xos_instance = OpenStackServiceInstance(name="test-instance", slice=self.slice, image=self.image,
                                                     node=self.node)
 
-            step = self.step_class()
+            step = self.step_class(model_accessor=self.model_accessor)
             fakeconn.compute.servers.return_value = []
             fakeconn.identity.find_project.return_value = MagicMock(id=self.slice.backend_handle)
             fakeconn.identity.find_domain.return_value = MagicMock(id=self.trust_domain.backend_handle)
@@ -122,7 +124,7 @@ class TestSyncOpenStackServiceInstance(unittest.TestCase):
             xos_instance = OpenStackServiceInstance(name="test-instance", slice=self.slice, image=self.image,
                                                     flavor=self.flavor)
 
-            step = self.step_class()
+            step = self.step_class(model_accessor=self.model_accessor)
             fakeconn.compute.servers.return_value = []
             fakeconn.identity.find_project.return_value = MagicMock(id=self.slice.backend_handle)
             fakeconn.identity.find_domain.return_value = MagicMock(id=self.trust_domain.backend_handle)
@@ -160,7 +162,7 @@ class TestSyncOpenStackServiceInstance(unittest.TestCase):
             owning_service = Service(name="test_service", public_key="key2")
             self.slice.service = owning_service
 
-            step = self.step_class()
+            step = self.step_class(model_accessor=self.model_accessor)
             fakeconn.compute.servers.return_value = []
             fakeconn.identity.find_project.return_value = MagicMock(id=self.slice.backend_handle)
             fakeconn.identity.find_domain.return_value = MagicMock(id=self.trust_domain.backend_handle)
@@ -197,7 +199,7 @@ class TestSyncOpenStackServiceInstance(unittest.TestCase):
             os_instance = MagicMock()
             os_instance.id = "1234"
 
-            step = self.step_class()
+            step = self.step_class(model_accessor=self.model_accessor)
             fakeconn.identity.find_project.return_value = os_instance
             fakeconn.compute.create_server.return_value = None
             fakeconn.compute.servers.return_value = [os_instance]
@@ -215,7 +217,7 @@ class TestSyncOpenStackServiceInstance(unittest.TestCase):
             xos_instance = OpenStackServiceInstance(name="test-instance", slice=self.slice, image=self.image,
                                                     node=self.node, flavor=self.flavor)
 
-            step = self.step_class()
+            step = self.step_class(model_accessor=self.model_accessor)
             os_instance = MagicMock()
             os_instance.id = "1234"
             fakeconn.compute.servers.return_value = [os_instance]

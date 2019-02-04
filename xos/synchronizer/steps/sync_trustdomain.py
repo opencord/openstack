@@ -14,8 +14,7 @@
 # limitations under the License.
 
 
-from synchronizers.new_base.ansible_helper import *
-from synchronizers.new_base.modelaccessor import TrustDomain
+from xossynchronizer.modelaccessor import TrustDomain
 from newopenstacksyncstep import NewOpenStackSyncStep
 
 from xosconfig import Config

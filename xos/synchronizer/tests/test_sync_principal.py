@@ -32,6 +32,8 @@ class TestSyncPrincipal(unittest.TestCase):
 
         sys.path.append(os.path.join(os.path.abspath(os.path.dirname(os.path.realpath(__file__))), "../steps"))
 
+        self.model_accessor = self.unittest_setup["model_accessor"]
+
         from sync_principal import SyncPrincipal
         self.step_class = SyncPrincipal
 
@@ -50,7 +52,7 @@ class TestSyncPrincipal(unittest.TestCase):
 
             xos_principal = Principal(name="test-principal", trust_domain=self.trust_domain)
 
-            step = self.step_class()
+            step = self.step_class(model_accessor=self.model_accessor)
             fakeconn.identity.find_user.return_value = None
             fakeconn.identity.find_domain.return_value = MagicMock(id=trust_domain_id)
 
@@ -73,7 +75,7 @@ class TestSyncPrincipal(unittest.TestCase):
             os_user = MagicMock()
             os_user.id = "1234"
 
-            step = self.step_class()
+            step = self.step_class(model_accessor=self.model_accessor)
             fakeconn.identity.find_user.return_value = os_user
             fakeconn.identity.create_user.return_value = None
 
@@ -89,7 +91,7 @@ class TestSyncPrincipal(unittest.TestCase):
 
             xos_principal = Principal(name="test-principal", trust_domain=self.trust_domain)
 
-            step = self.step_class()
+            step = self.step_class(model_accessor=self.model_accessor)
             os_user = MagicMock()
             os_user.id = "1234"
             fakeconn.identity.find_user.return_value = os_user
