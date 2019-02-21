@@ -1,4 +1,3 @@
-
 # Copyright 2017-present Open Networking Foundation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,26 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
-version: '2'
-
-networks:
-  xos:
-    external: true
-
-services:
-  synchronizer:
-    image: xosproject/openstack-synchronizer
-    networks:
-      - xos
-    #command: bash -c "sleep 86400"
-    volumes:
-        - /opt/cord/build/platform-install/credentials/xosadmin@opencord.org:/opt/xos/services/openstack/credentials/xosadmin@opencord.org
-    external_links: 
-        - rcordbs_xos_redis_1:redis
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "1000k"
-        max-file: "5"

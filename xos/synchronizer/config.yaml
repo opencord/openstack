@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: openstack-synchronizer
+name: openstack
 dependency_graph: "/opt/xos/synchronizers/openstack/model-deps"
 steps_dir: "/opt/xos/synchronizers/openstack/steps"
 pull_steps_dir: "/opt/xos/synchronizers/openstack/pull_steps"
