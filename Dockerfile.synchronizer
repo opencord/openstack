@@ -14,7 +14,7 @@
 
 # xosproject/openstack-synchronizer
 
-FROM xosproject/xos-synchronizer-base:2.1.54
+FROM xosproject/xos-synchronizer-base:2.2.1
 
 COPY xos/synchronizer /opt/xos/synchronizers/openstack
 COPY VERSION /opt/xos/synchronizers/openstack/
